@@ -1,6 +1,6 @@
 {
   "name": "ai-team-orchestrator",
-  "version": "1.2.8",
+  "version": "1.3.0",
   "description": "🤖 AI Team Orchestrator - Zero-Config AI coding team for GitHub",
   "main": "index.js",
   "type": "module",
