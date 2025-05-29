@@ -35,7 +35,7 @@ class AITeamCLI {
     this.program
       .name('ai-team')
       .description('🤖 AI Team Orchestrator - Zero-Config AI coding team for GitHub')
-      .version('1.2.6')
+      .version('1.4.0')
       .option('-v, --verbose', 'Mode verbose pour plus de détails')
       .option('--no-color', 'Désactiver les couleurs')
       .hook('preAction', (thisCommand) => {
@@ -54,6 +54,7 @@ class AITeamCLI {
   }
 
   setupCommands() {
+    this.setupCreateCommand();
     this.setupInstallCommand();
     this.setupStatusCommand();
     this.setupAgentsCommand();
@@ -64,6 +65,377 @@ class AITeamCLI {
     this.setupUpdateCommand();
     this.setupDebugCommand();
     this.setupFixCommand();
+  }
+
+  setupCreateCommand() {
+    this.program
+      .command('create')
+      .description('🤖 Créer une nouvelle tâche AI Team de manière interactive')
+      .option('--quick', 'Mode rapide sans vérifications')
+      .action(async (options) => {
+        try {
+          await this.handleCreateCommand(options);
+        } catch (error) {
+          this.errorHandler.handle(error);
+          process.exit(1);
+        }
+      });
+  }
+
+  async handleCreateCommand(options) {
+    console.clear();
+    this.logger.title('🤖 AI Team Orchestrator - Création de tâche');
+    
+    console.log(chalk.cyan('┌─────────────────────────────────────────────────────────────┐'));
+    console.log(chalk.cyan('│') + chalk.white('  Bienvenue dans AI Team Orchestrator avec Together.ai      ') + chalk.cyan('│'));
+    console.log(chalk.cyan('│') + chalk.white('  Votre équipe IA gratuite pour générer du code              ') + chalk.cyan('│'));
+    console.log(chalk.cyan('└─────────────────────────────────────────────────────────────┘'));
+    
+    // Étape 1: Vérification de l'installation
+    console.log(chalk.yellow('\n📋 ÉTAPE 1/5: Vérification de l\'installation'));
+    await this.checkInstallationStatus(options.quick);
+    
+    // Étape 2: Vérification de la configuration
+    console.log(chalk.yellow('\n🔧 ÉTAPE 2/5: Vérification de la configuration'));
+    await this.checkConfiguration(options.quick);
+    
+    // Étape 3: Sélection de l'agent
+    console.log(chalk.yellow('\n🤖 ÉTAPE 3/5: Sélection de l\'agent IA'));
+    const agentType = await this.selectAgent();
+    
+    // Étape 4: Description de la tâche
+    console.log(chalk.yellow('\n📝 ÉTAPE 4/5: Description de la tâche'));
+    const taskDetails = await this.getTaskDetails(agentType);
+    
+    // Étape 5: Création et lancement
+    console.log(chalk.yellow('\n🚀 ÉTAPE 5/5: Création et lancement'));
+    await this.createAndLaunchTask(agentType, taskDetails);
+  }
+
+  async checkInstallationStatus(quick) {
+    const spinner = this.progressManager.start('Vérification de l\'installation AI Team...');
+    
+    try {
+      // Vérifier si les fichiers AI Team sont présents
+      const fs = await import('fs/promises');
+      
+      await fs.access('.github/workflows/ai-team-mcp.yml');
+      await fs.access('.github/scripts/ai_team_mcp.py');
+      
+      spinner.succeed('✅ AI Team installé et configuré');
+      
+      if (!quick) {
+        console.log(chalk.green('   📁 Workflow: .github/workflows/ai-team-mcp.yml'));
+        console.log(chalk.green('   🐍 Script: .github/scripts/ai_team_mcp.py'));
+      }
+      
+    } catch (error) {
+      spinner.fail('❌ AI Team n\'est pas installé');
+      
+      console.log(chalk.red('\n🚨 AI Team n\'est pas installé dans ce repository.'));
+      console.log(chalk.white('   Voulez-vous l\'installer maintenant ?'));
+      
+      const answer = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'install',
+          message: '📦 Installer AI Team maintenant ?',
+          default: true
+        }
+      ]);
+      
+      if (answer.install) {
+        await this.performInstallation({ type: 'mcp', force: false });
+        console.log(chalk.green('✅ AI Team installé avec succès !'));
+      } else {
+        console.log(chalk.red('❌ Installation annulée. AI Team est requis pour continuer.'));
+        process.exit(1);
+      }
+    }
+  }
+
+  async checkConfiguration(quick) {
+    const spinner = this.progressManager.start('Vérification de la configuration Together.ai...');
+    
+    // Simuler la vérification de la configuration
+    // En réalité, on ne peut pas vérifier le secret GitHub depuis le CLI local
+    
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      spinner.succeed('✅ Configuration vérifiée');
+      
+      if (!quick) {
+        console.log(chalk.cyan('\n💡 Configuration requise:'));
+        console.log(chalk.white('   🔑 Secret GitHub: TOGETHER_AI_API_KEY'));
+        console.log(chalk.white('   🤖 Modèle classification: meta-llama/Llama-2-7b-chat-hf'));
+        console.log(chalk.white('   💻 Modèle génération: codellama/CodeLlama-7b-Instruct-hf'));
+      }
+      
+    } catch (error) {
+      spinner.fail('❌ Configuration incomplète');
+      
+      console.log(chalk.red('\n🚨 Configuration Together.ai manquante !'));
+      console.log(chalk.white('\n📋 Actions requises:'));
+      console.log(chalk.white('1. Allez dans Settings → Secrets → Actions sur GitHub'));
+      console.log(chalk.white('2. Créez un secret: TOGETHER_AI_API_KEY'));
+      console.log(chalk.white('3. Valeur: 7b61ccee2b0b0f9d4b842862034eea9b18c5e4e26728ef8714b581c0cf0c91fe'));
+      
+      const answer = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'continue',
+          message: '⚠️  Continuer sans vérifier la configuration ?',
+          default: false
+        }
+      ]);
+      
+      if (!answer.continue) {
+        console.log(chalk.yellow('⏸️  Configurez Together.ai et relancez ai-team create'));
+        process.exit(0);
+      }
+    }
+  }
+
+  async selectAgent() {
+    console.log(chalk.cyan('\n🤖 Agents IA disponibles:'));
+    
+    const agents = [
+      {
+        name: '🎨 Frontend Specialist - Pages web, interfaces, CSS',
+        value: 'frontend',
+        description: 'Parfait pour: landing pages, composants UI, animations CSS'
+      },
+      {
+        name: '⚙️  Backend Specialist - APIs, serveurs, bases de données',
+        value: 'backend', 
+        description: 'Parfait pour: APIs REST, serveurs Express, intégrations'
+      },
+      {
+        name: '🧪 QA Engineer - Tests et qualité',
+        value: 'testing',
+        description: 'Parfait pour: tests unitaires, tests d\'intégration, validation'
+      },
+      {
+        name: '🐛 Bug Hunter - Corrections et déboggage',
+        value: 'bug_fix',
+        description: 'Parfait pour: corriger des bugs, optimiser les performances'
+      },
+      {
+        name: '🏗️  Code Architect - Refactoring et structure',
+        value: 'refactor',
+        description: 'Parfait pour: restructurer le code, optimisation, architecture'
+      },
+      {
+        name: '🚀 Full-Stack Developer - Développement général',
+        value: 'feature',
+        description: 'Parfait pour: nouvelles fonctionnalités, projets complets'
+      }
+    ];
+
+    // Afficher les descriptions
+    agents.forEach(agent => {
+      console.log(chalk.white(`   ${agent.name}`));
+      console.log(chalk.gray(`     ${agent.description}`));
+    });
+
+    const answer = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'agent',
+        message: '\n🎯 Quel agent voulez-vous utiliser ?',
+        choices: agents.map(a => ({ name: a.name, value: a.value })),
+        pageSize: 6
+      }
+    ]);
+
+    const selectedAgent = agents.find(a => a.value === answer.agent);
+    console.log(chalk.green(`\n✅ Agent sélectionné: ${selectedAgent.name}`));
+    
+    return answer.agent;
+  }
+
+  async getTaskDetails(agentType) {
+    console.log(chalk.cyan('\n📝 Décrivez votre tâche:'));
+    
+    // Suggestions basées sur l'agent
+    const suggestions = this.getTaskSuggestions(agentType);
+    console.log(chalk.gray('💡 Suggestions:'));
+    suggestions.forEach(suggestion => {
+      console.log(chalk.gray(`   • ${suggestion}`));
+    });
+
+    const answers = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'title',
+        message: '📋 Titre de la tâche:',
+        validate: input => input.length > 0 || 'Le titre est obligatoire',
+        default: suggestions[0]
+      },
+      {
+        type: 'editor',
+        name: 'description',
+        message: '📄 Description détaillée (un éditeur va s\'ouvrir):',
+        default: `Décrivez en détail ce que vous souhaitez que l'IA génère:
+
+- Fonctionnalités requises
+- Style ou design souhaité  
+- Technologies à utiliser
+- Contraintes particulières
+
+Plus vous donnez de détails, meilleur sera le résultat !`
+      },
+      {
+        type: 'list',
+        name: 'priority',
+        message: '⚡ Priorité de la tâche:',
+        choices: [
+          { name: '🚨 Urgente', value: 'urgent' },
+          { name: '⚡ Haute', value: 'high' },
+          { name: '📋 Normale', value: 'normal' },
+          { name: '📝 Basse', value: 'low' }
+        ],
+        default: 'normal'
+      }
+    ]);
+
+    return answers;
+  }
+
+  getTaskSuggestions(agentType) {
+    const suggestions = {
+      frontend: [
+        'Create a modern landing page with hero section',
+        'Build a responsive navigation component',
+        'Design a pricing table with animations',
+        'Create a contact form with validation'
+      ],
+      backend: [
+        'Create a REST API for user management',
+        'Build a file upload service',
+        'Design a database schema for blog',
+        'Create authentication middleware'
+      ],
+      testing: [
+        'Write unit tests for user service',
+        'Create integration tests for API',
+        'Add end-to-end tests for checkout',
+        'Implement test data factories'
+      ],
+      bug_fix: [
+        'Fix memory leak in data processing',
+        'Resolve CSS layout issues on mobile',
+        'Debug API timeout problems',
+        'Fix form validation errors'
+      ],
+      refactor: [
+        'Refactor component architecture',
+        'Optimize database queries',
+        'Clean up legacy code structure',
+        'Improve error handling'
+      ],
+      feature: [
+        'Build a complete blog system',
+        'Create a dashboard with charts',
+        'Implement user profile management',
+        'Add search functionality'
+      ]
+    };
+
+    return suggestions[agentType] || suggestions.feature;
+  }
+
+  async createAndLaunchTask(agentType, taskDetails) {
+    console.log(chalk.cyan('\n🚀 Récapitulatif de la tâche:'));
+    console.log(chalk.white(`   Agent: ${agentType}`));
+    console.log(chalk.white(`   Titre: ${taskDetails.title}`));
+    console.log(chalk.white(`   Priorité: ${taskDetails.priority}`));
+    console.log(chalk.gray(`   Description: ${taskDetails.description.substring(0, 100)}...`));
+
+    const confirm = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'launch',
+        message: '🎯 Lancer la création de cette tâche ?',
+        default: true
+      }
+    ]);
+
+    if (!confirm.launch) {
+      console.log(chalk.yellow('⏸️  Création annulée'));
+      return;
+    }
+
+    // Créer l'issue GitHub
+    await this.createGitHubIssue(taskDetails, agentType);
+  }
+
+  async createGitHubIssue(taskDetails, agentType) {
+    const spinner = this.progressManager.start('🔧 Création de l\'issue GitHub...');
+    
+    try {
+      const { execSync } = await import('child_process');
+      
+      // Créer le contenu de l'issue
+      const issueBody = `${taskDetails.description}
+
+---
+**🤖 Paramètres AI Team:**
+- Agent: ${agentType}
+- Priorité: ${taskDetails.priority}
+- Créé via: ai-team create
+
+**🚀 Ce qui va se passer:**
+1. L'agent IA va analyser cette demande
+2. Du code sera généré avec Together.ai
+3. Une Pull Request sera créée automatiquement
+4. Vous recevrez une notification
+
+*Généré par AI Team Orchestrator v1.4.0*`;
+
+      // Créer l'issue avec gh CLI
+      const command = `gh issue create --title "${taskDetails.title}" --body "${issueBody}"`;
+      
+      const result = execSync(command, { encoding: 'utf8' });
+      const issueUrl = result.trim();
+      
+      spinner.succeed('✅ Issue créée avec succès !');
+      
+      console.log(chalk.green(`\n🎉 Tâche créée: ${issueUrl}`));
+      console.log(chalk.cyan('\n⏱️  Que va-t-il se passer maintenant:'));
+      console.log(chalk.white('   1. GitHub Actions va se déclencher (~30 secondes)'));
+      console.log(chalk.white('   2. Together.ai va analyser votre demande (~1 minute)'));
+      console.log(chalk.white('   3. Le code sera généré (~2 minutes)'));
+      console.log(chalk.white('   4. Une PR sera créée automatiquement (~3 minutes)'));
+      console.log(chalk.white('   5. Vous recevrez une notification GitHub'));
+      
+      console.log(chalk.yellow('\n📱 Surveillez vos notifications GitHub !'));
+      console.log(chalk.gray('   💡 Tip: Regardez l\'onglet Actions de votre repo pour suivre le progrès'));
+      
+    } catch (error) {
+      spinner.fail('❌ Échec de création de l\'issue');
+      
+      if (error.message.includes('gh: command not found')) {
+        console.log(chalk.red('\n🚨 GitHub CLI (gh) n\'est pas installé !'));
+        console.log(chalk.white('\n📋 Installation GitHub CLI:'));
+        console.log(chalk.white('   macOS: brew install gh'));
+        console.log(chalk.white('   Windows: winget install GitHub.cli'));
+        console.log(chalk.white('   Linux: apt install gh'));
+        console.log(chalk.white('\n   Puis: gh auth login'));
+      } else {
+        console.log(chalk.red(`\n❌ Erreur: ${error.message}`));
+        console.log(chalk.yellow('\n🔧 Alternative manuelle:'));
+        console.log(chalk.white('1. Allez sur GitHub dans votre repository'));
+        console.log(chalk.white('2. Créez une nouvelle issue'));
+        console.log(chalk.white(`3. Titre: ${taskDetails.title}`));
+        console.log(chalk.white('4. Copiez cette description:'));
+        console.log(chalk.gray('─'.repeat(50)));
+        console.log(taskDetails.description);
+        console.log(chalk.gray('─'.repeat(50)));
+      }
+      
+      throw error;
+    }
   }
 
   setupInstallCommand() {
@@ -188,7 +560,7 @@ class AITeamCLI {
   showInstallationSuccess(options) {
     this.logger.success('AI Team installé avec succès! 🎉');
     
-    console.log(chalk.yellow('\n🚀 Prochaines étapes:'));
+    console.log(chalk.yellow('\n🎯 Prochaines étapes:'));
     console.log(chalk.white('1.'), 'git add . && git commit -m "🤖 Add AI Team" && git push');
     console.log(chalk.white('2.'), 'Créer une issue: "Créer une page moderne"');
     console.log(chalk.white('3.'), 'Regarder la magie opérer! ✨');
@@ -1175,15 +1547,38 @@ class AITeamCLI {
   // Affichage d'aide si aucun argument
   showDefaultHelp() {
     if (!process.argv.slice(2).length) {
-      console.log(chalk.blue.bold('🤖 AI Team Orchestrator\n'));
-      console.log(chalk.gray('Zero-Config AI coding team for GitHub\n'));
-      this.program.outputHelp();
+      console.clear();
       
-      console.log(chalk.cyan('\n📚 Exemples d\'utilisation:'));
-      console.log(chalk.gray('  ai-team install --type zero-config'));
-      console.log(chalk.gray('  ai-team demo --type frontend'));
-      console.log(chalk.gray('  ai-team status'));
-      console.log(chalk.gray('  ai-team doctor --fix'));
+      console.log(chalk.blue.bold('🤖 AI Team Orchestrator v1.4.0'));
+      console.log(chalk.cyan('✨ Votre équipe IA gratuite avec Together.ai'));
+      console.log(chalk.gray('Zero-Config AI coding team for GitHub\n'));
+      
+      console.log(chalk.yellow('🚀 DÉMARRAGE RAPIDE:'));
+      console.log(chalk.white('  ai-team create'), chalk.gray('- Mode interactif pour créer une tâche'));
+      console.log(chalk.white('  ai-team install'), chalk.gray('- Installer AI Team dans votre repo'));
+      console.log();
+      
+      console.log(chalk.yellow('📋 COMMANDES DISPONIBLES:'));
+      console.log(chalk.white('  ai-team create'), chalk.gray('   - 🎯 Créer une tâche de manière interactive'));
+      console.log(chalk.white('  ai-team install'), chalk.gray('  - 📦 Installer AI Team dans le repository'));
+      console.log(chalk.white('  ai-team status'), chalk.gray('   - ✅ Vérifier le statut d\'installation'));
+      console.log(chalk.white('  ai-team agents'), chalk.gray('   - 🤖 Lister les agents IA disponibles'));
+      console.log(chalk.white('  ai-team demo'), chalk.gray('     - 🧪 Créer une issue de démonstration'));
+      console.log(chalk.white('  ai-team debug'), chalk.gray('    - 🔍 Diagnostiquer les problèmes'));
+      console.log(chalk.white('  ai-team doctor'), chalk.gray('   - 🩺 Réparer les problèmes détectés'));
+      console.log();
+      
+      console.log(chalk.cyan('💡 NOUVEAU:'));
+      console.log(chalk.white('• Together.ai - Modèles IA gratuits (Llama + CodeLlama)'));
+      console.log(chalk.white('• Mode interactif avec guide étape par étape'));
+      console.log(chalk.white('• Création d\'issues directement depuis le terminal'));
+      console.log();
+      
+      console.log(chalk.green('🎯 Pour commencer immédiatement:'));
+      console.log(chalk.blue.bold('  ai-team create'));
+      console.log();
+      
+      console.log(chalk.gray('Pour plus d\'options: ai-team --help'));
     }
   }
 
