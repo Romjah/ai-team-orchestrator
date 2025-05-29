@@ -32,19 +32,19 @@
     "workflow"
   ],
   "author": {
-    "name": "AI Team Orchestrator",
-    "email": "contact@ai-team-orchestrator.com",
-    "url": "https://github.com/ai-team-orchestrator"
+    "name": "Romain Jahier",
+    "email": "romain.jahier.pro@gmail.com",
+    "url": "https://github.com/Romjah"
   },
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ai-team-orchestrator/ai-team-orchestrator.git"
+    "url": "git+https://github.com/Romjah/ai-team-orchestrator.git"
   },
   "bugs": {
-    "url": "https://github.com/ai-team-orchestrator/ai-team-orchestrator/issues"
+    "url": "https://github.com/Romjah/ai-team-orchestrator/issues"
   },
-  "homepage": "https://github.com/ai-team-orchestrator/ai-team-orchestrator#readme",
+  "homepage": "https://github.com/Romjah/ai-team-orchestrator#readme",
   "engines": {
     "node": ">=14.0.0"
   },
