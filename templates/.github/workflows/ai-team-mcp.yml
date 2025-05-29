@@ -1,0 +1,144 @@
+name: AI Team MCP
+on:
+  issues:
+    types: [opened, edited]
+  workflow_dispatch:
+    inputs:
+      task_description:
+        description: 'Describe what you want AI Team to build'
+        required: true
+        default: 'Create a modern landing page'
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  ai-team-mcp:
+    runs-on: ubuntu-latest
+    name: 🤖 AI Team MCP
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+          
+      - name: Setup Git
+        run: |
+          git config --global user.name "AI Team MCP"
+          git config --global user.email "ai-team-mcp@github-actions.local"
+          
+      - name: 🤖 Run AI Team MCP
+        id: ai_team
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_TITLE: ${{ github.event.issue.title || github.event.inputs.task_description }}
+          ISSUE_BODY: ${{ github.event.issue.body || 'Create modern code' }}
+        run: |
+          chmod +x .github/scripts/ai_team_mcp.py
+          python3 .github/scripts/ai_team_mcp.py
+          
+      - name: 🌿 Create Branch and Push
+        if: steps.ai_team.outputs.changes_made == 'true'
+        run: |
+          BRANCH_NAME="${{ steps.ai_team.outputs.branch_name }}"
+          git checkout -b $BRANCH_NAME
+          git add -A
+          git commit -m "🤖 ${{ steps.ai_team.outputs.agent }}: ${{ steps.ai_team.outputs.task_summary }}"
+          git push origin $BRANCH_NAME
+          
+      - name: 🔄 Create Pull Request
+        if: steps.ai_team.outputs.changes_made == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const branchName = '${{ steps.ai_team.outputs.branch_name }}';
+            const agent = '${{ steps.ai_team.outputs.agent }}';
+            const taskSummary = '${{ steps.ai_team.outputs.task_summary }}';
+            const filesCreated = '${{ steps.ai_team.outputs.files_created }}';
+            const issueNumber = '${{ github.event.issue.number }}';
+            
+            const prBody = `🤖 Pull Request générée par AI Team MCP
+
+Agent IA: ${agent}
+Issue: ${issueNumber ? '#' + issueNumber : 'Manual task'}
+
+Description: ${taskSummary}
+Fichiers créés: ${filesCreated}
+
+Technologie: MCP GitHub + AI Team Orchestrator
+
+Créée automatiquement par AI Team Orchestrator + MCP GitHub`;
+            
+            const pr = await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🤖 ${agent}: ${taskSummary}`,
+              head: branchName,
+              base: 'main',
+              body: prBody + (issueNumber ? `\n\nCloses #${issueNumber}` : '')
+            });
+            
+            console.log('PR créée:', pr.data.html_url);
+            
+            if (issueNumber && context.payload.issue) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: parseInt(issueNumber),
+                body: `🎉 Pull Request créée avec MCP GitHub !
+
+Agent utilisé: ${agent}
+PR créée: ${pr.data.html_url}
+
+Prochaines étapes:
+1. Review le code généré dans la PR
+2. Tester les fonctionnalités
+3. Merger la PR si approuvé
+
+AI Team Orchestrator v1.2.8 + MCP GitHub`
+              });
+            }
+            
+      - name: 💬 Comment No Changes
+        if: steps.ai_team.outputs.changes_made != 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            if (context.payload.issue) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.issue.number,
+                body: `## 🤖 AI Team MCP a analysé votre demande
+
+**Agent assigné:** ${{ steps.ai_team.outputs.agent }}
+**Tâche:** ${{ steps.ai_team.outputs.task_summary }}
+
+⚠️ **Aucun fichier généré**
+
+L'agent a analysé mais n'a pas créé de fichiers.
+
+💡 **Suggestions:**
+- Reformulez de manière plus spécifique
+- Précisez le type de code souhaité
+- Ajoutez des détails techniques
+
+---
+*AI Team Orchestrator v1.2.8 avec MCP GitHub*`
+              });
+            }
+            
+      - name: 🎉 Summary
+        run: |
+          echo "🤖 AI Team MCP completed!"
+          echo "Agent: ${{ steps.ai_team.outputs.agent }}"
+          echo "Task: ${{ steps.ai_team.outputs.task_summary }}"
+          echo "Changes: ${{ steps.ai_team.outputs.changes_made }}" 
