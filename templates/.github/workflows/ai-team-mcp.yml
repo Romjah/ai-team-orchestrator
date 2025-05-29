@@ -1,4 +1,4 @@
-name: AI Team MCP
+name: AI Team Together.ai
 on:
   issues:
     types: [opened, edited]
@@ -13,17 +13,21 @@ permissions:
   contents: write
   pull-requests: write
   issues: write
+  actions: read
+  checks: write
+  statuses: write
 
 jobs:
-  ai-team-mcp:
+  ai-team-together:
     runs-on: ubuntu-latest
-    name: 🤖 AI Team MCP
+    name: 🤖 AI Team Together.ai
     
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
           
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -32,16 +36,20 @@ jobs:
           
       - name: Setup Git
         run: |
-          git config --global user.name "AI Team MCP"
-          git config --global user.email "ai-team-mcp@github-actions.local"
+          git config --global user.name "AI Team Together.ai"
+          git config --global user.email "ai-team-together@github-actions.local"
           
-      - name: 🤖 Run AI Team MCP
+      - name: 🤖 Run AI Team Together.ai
         id: ai_team
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TOGETHER_AI_API_KEY: ${{ secrets.TOGETHER_AI_API_KEY }}
           ISSUE_TITLE: ${{ github.event.issue.title || github.event.inputs.task_description }}
           ISSUE_BODY: ${{ github.event.issue.body || 'Create modern code' }}
         run: |
+          # Install Python dependencies
+          pip install requests python-dotenv typing-extensions
+          
           chmod +x .github/scripts/ai_team_mcp.py
           python3 .github/scripts/ai_team_mcp.py
           
@@ -56,89 +64,93 @@ jobs:
           
       - name: 🔄 Create Pull Request
         if: steps.ai_team.outputs.changes_made == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH_NAME="${{ steps.ai_team.outputs.branch_name }}"
+          AGENT="${{ steps.ai_team.outputs.agent }}"
+          SUMMARY="${{ steps.ai_team.outputs.task_summary }}"
+          FILES="${{ steps.ai_team.outputs.files_created }}"
+          ISSUE_NUM="${{ github.event.issue.number }}"
+          
+          PR_TITLE="🤖 $AGENT: $SUMMARY"
+          
+          echo "🤖 Pull Request générée par AI Team Together.ai" > pr_body.txt
+          echo "" >> pr_body.txt
+          echo "Agent IA: $AGENT" >> pr_body.txt
+          if [ -n "$ISSUE_NUM" ]; then
+            echo "Issue: #$ISSUE_NUM" >> pr_body.txt
+          else
+            echo "Issue: Manual task" >> pr_body.txt
+          fi
+          echo "" >> pr_body.txt
+          echo "Description: $SUMMARY" >> pr_body.txt
+          echo "Fichiers créés: $FILES" >> pr_body.txt
+          echo "" >> pr_body.txt
+          echo "Technologie: Together.ai + AI Team Orchestrator" >> pr_body.txt
+          echo "" >> pr_body.txt
+          echo "Créée automatiquement par AI Team Orchestrator + Together.ai" >> pr_body.txt
+          
+          if [ -n "$ISSUE_NUM" ]; then
+            echo "" >> pr_body.txt
+            echo "Closes #$ISSUE_NUM" >> pr_body.txt
+          fi
+          
+          gh pr create --title "$PR_TITLE" --body-file pr_body.txt --head "$BRANCH_NAME" --base main
+          rm pr_body.txt
+          
+      - name: 💬 Comment Success
+        if: steps.ai_team.outputs.changes_made == 'true' && github.event.issue.number
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const branchName = '${{ steps.ai_team.outputs.branch_name }}';
             const agent = '${{ steps.ai_team.outputs.agent }}';
-            const taskSummary = '${{ steps.ai_team.outputs.task_summary }}';
-            const filesCreated = '${{ steps.ai_team.outputs.files_created }}';
-            const issueNumber = '${{ github.event.issue.number }}';
+            const branchName = '${{ steps.ai_team.outputs.branch_name }}';
             
-            const prBody = `🤖 Pull Request générée par AI Team MCP
+            let commentBody = '🎉 Pull Request créée avec Together.ai !\n\n';
+            commentBody += 'Agent utilisé: ' + agent + '\n';
+            commentBody += 'Branche: ' + branchName + '\n\n';
+            commentBody += 'Prochaines étapes:\n';
+            commentBody += '1. Review le code généré dans la PR\n';
+            commentBody += '2. Tester les fonctionnalités\n';
+            commentBody += '3. Merger la PR si approuvé\n\n';
+            commentBody += 'AI Team Orchestrator v1.3.0 + Together.ai';
 
-Agent IA: ${agent}
-Issue: ${issueNumber ? '#' + issueNumber : 'Manual task'}
-
-Description: ${taskSummary}
-Fichiers créés: ${filesCreated}
-
-Technologie: MCP GitHub + AI Team Orchestrator
-
-Créée automatiquement par AI Team Orchestrator + MCP GitHub`;
-            
-            const pr = await github.rest.pulls.create({
+            await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: `🤖 ${agent}: ${taskSummary}`,
-              head: branchName,
-              base: 'main',
-              body: prBody + (issueNumber ? `\n\nCloses #${issueNumber}` : '')
+              issue_number: context.issue.number,
+              body: commentBody
             });
             
-            console.log('PR créée:', pr.data.html_url);
-            
-            if (issueNumber && context.payload.issue) {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: parseInt(issueNumber),
-                body: `🎉 Pull Request créée avec MCP GitHub !
-
-Agent utilisé: ${agent}
-PR créée: ${pr.data.html_url}
-
-Prochaines étapes:
-1. Review le code généré dans la PR
-2. Tester les fonctionnalités
-3. Merger la PR si approuvé
-
-AI Team Orchestrator v1.2.8 + MCP GitHub`
-              });
-            }
-            
       - name: 💬 Comment No Changes
-        if: steps.ai_team.outputs.changes_made != 'true'
+        if: steps.ai_team.outputs.changes_made != 'true' && github.event.issue.number
         uses: actions/github-script@v7
         with:
           script: |
-            if (context.payload.issue) {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.payload.issue.number,
-                body: `## 🤖 AI Team MCP a analysé votre demande
+            let commentBody = '## 🤖 AI Team MCP a analysé votre demande\n\n';
+            commentBody += '**Agent assigné:** ${{ steps.ai_team.outputs.agent }}\n';
+            commentBody += '**Tâche:** ${{ steps.ai_team.outputs.task_summary }}\n\n';
+            commentBody += '⚠️ **Aucun fichier généré**\n\n';
+            commentBody += 'L\'agent a analysé mais n\'a pas créé de fichiers.\n\n';
+            commentBody += '💡 **Suggestions:**\n';
+            commentBody += '- Reformulez de manière plus spécifique\n';
+            commentBody += '- Précisez le type de code souhaité\n';
+            commentBody += '- Ajoutez des détails techniques\n\n';
+            commentBody += '---\n';
+            commentBody += '*AI Team Orchestrator v1.3.0 avec Together.ai*';
 
-**Agent assigné:** ${{ steps.ai_team.outputs.agent }}
-**Tâche:** ${{ steps.ai_team.outputs.task_summary }}
-
-⚠️ **Aucun fichier généré**
-
-L'agent a analysé mais n'a pas créé de fichiers.
-
-💡 **Suggestions:**
-- Reformulez de manière plus spécifique
-- Précisez le type de code souhaité
-- Ajoutez des détails techniques
-
----
-*AI Team Orchestrator v1.2.8 avec MCP GitHub*`
-              });
-            }
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: commentBody
+            });
             
       - name: 🎉 Summary
         run: |
-          echo "🤖 AI Team MCP completed!"
+          echo "🤖 AI Team Together.ai completed!"
           echo "Agent: ${{ steps.ai_team.outputs.agent }}"
           echo "Task: ${{ steps.ai_team.outputs.task_summary }}"
           echo "Changes: ${{ steps.ai_team.outputs.changes_made }}" 
