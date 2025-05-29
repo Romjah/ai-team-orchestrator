@@ -35,7 +35,7 @@ class AITeamCLI {
     this.program
       .name('ai-team')
       .description('🤖 AI Team Orchestrator - Zero-Config AI coding team for GitHub')
-      .version('1.4.1')
+      .version('1.4.2')
       .option('-v, --verbose', 'Mode verbose pour plus de détails')
       .option('--no-color', 'Désactiver les couleurs')
       .hook('preAction', (thisCommand) => {
@@ -264,27 +264,67 @@ class AITeamCLI {
       console.log(chalk.gray(`   • ${suggestion}`));
     });
 
-    const answers = await inquirer.prompt([
+    // Titre de la tâche
+    const titleAnswer = await inquirer.prompt([
       {
         type: 'input',
         name: 'title',
         message: '📋 Titre de la tâche:',
         validate: input => input.length > 0 || 'Le titre est obligatoire',
         default: suggestions[0]
+      }
+    ]);
+
+    console.log(chalk.cyan('\n📄 Description détaillée (étape par étape):'));
+    
+    // Questions pour construire la description
+    const descriptionAnswers = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'mainGoal',
+        message: '🎯 Objectif principal (que voulez-vous créer ?):',
+        default: 'Une application moderne et responsive'
       },
       {
-        type: 'editor',
-        name: 'description',
-        message: '📄 Description détaillée (un éditeur va s\'ouvrir):',
-        default: `Décrivez en détail ce que vous souhaitez que l'IA génère:
-
-- Fonctionnalités requises
-- Style ou design souhaité  
-- Technologies à utiliser
-- Contraintes particulières
-
-Plus vous donnez de détails, meilleur sera le résultat !`
+        type: 'checkbox',
+        name: 'features',
+        message: '✨ Fonctionnalités souhaitées:',
+        choices: this.getFeatureChoices(agentType),
+        default: this.getDefaultFeatures(agentType)
       },
+      {
+        type: 'list',
+        name: 'style',
+        message: '🎨 Style visuel:',
+        choices: [
+          { name: '🌟 Moderne avec animations', value: 'modern' },
+          { name: '🎯 Minimaliste et épuré', value: 'minimal' },
+          { name: '🎪 Coloré et dynamique', value: 'colorful' },
+          { name: '💼 Professionnel et sobre', value: 'professional' },
+          { name: '🌙 Dark mode', value: 'dark' },
+          { name: '🎨 Style personnalisé', value: 'custom' }
+        ],
+        default: 'modern'
+      },
+      {
+        type: 'input',
+        name: 'technologies',
+        message: '⚙️ Technologies spécifiques (optionnel):',
+        default: this.getDefaultTechnologies(agentType)
+      },
+      {
+        type: 'input',
+        name: 'constraints',
+        message: '⚠️ Contraintes ou exigences particulières (optionnel):',
+        default: ''
+      }
+    ]);
+
+    // Construire la description complète
+    const description = this.buildDescription(titleAnswer.title, descriptionAnswers);
+
+    // Priorité
+    const priorityAnswer = await inquirer.prompt([
       {
         type: 'list',
         name: 'priority',
@@ -299,7 +339,160 @@ Plus vous donnez de détails, meilleur sera le résultat !`
       }
     ]);
 
-    return answers;
+    return {
+      title: titleAnswer.title,
+      description: description,
+      priority: priorityAnswer.priority,
+      details: descriptionAnswers
+    };
+  }
+
+  getFeatureChoices(agentType) {
+    const choices = {
+      frontend: [
+        'Navigation responsive',
+        'Animations CSS',
+        'Formulaires de contact',
+        'Galerie d\'images',
+        'Section héro avec CTA',
+        'Footer avec liens sociaux',
+        'Menu mobile (hamburger)',
+        'Cartes de produits/services',
+        'Témoignages clients',
+        'FAQ accordion'
+      ],
+      backend: [
+        'Authentification utilisateurs',
+        'CRUD opérations',
+        'Validation des données',
+        'Gestion des erreurs',
+        'Upload de fichiers',
+        'Envoi d\'emails',
+        'Cache et performance',
+        'Documentation API',
+        'Tests unitaires',
+        'Logs et monitoring'
+      ],
+      testing: [
+        'Tests unitaires',
+        'Tests d\'intégration',
+        'Tests end-to-end',
+        'Mocks et stubs',
+        'Coverage reporting',
+        'Tests de performance',
+        'Tests de sécurité',
+        'Tests de régression',
+        'CI/CD integration',
+        'Test data factories'
+      ],
+      bug_fix: [
+        'Identification du problème',
+        'Reproduction du bug',
+        'Correction du code',
+        'Tests de non-régression',
+        'Documentation du fix',
+        'Performance optimization',
+        'Code cleanup',
+        'Error handling',
+        'Logging amélioré',
+        'Monitoring ajouté'
+      ],
+      refactor: [
+        'Restructuration du code',
+        'Amélioration des performances',
+        'Modernisation syntaxe',
+        'Simplification logique',
+        'Suppression code mort',
+        'Amélioration lisibilité',
+        'Pattern design',
+        'Séparation des responsabilités',
+        'Documentation mise à jour',
+        'Tests ajoutés'
+      ],
+      feature: [
+        'Interface utilisateur',
+        'Logique métier',
+        'Persistance des données',
+        'Intégrations externes',
+        'Notifications',
+        'Recherche et filtres',
+        'Dashboard et analytics',
+        'Import/Export',
+        'Workflow automation',
+        'Personnalisation'
+      ]
+    };
+
+    return choices[agentType] || choices.feature;
+  }
+
+  getDefaultFeatures(agentType) {
+    const defaults = {
+      frontend: ['Navigation responsive', 'Section héro avec CTA'],
+      backend: ['CRUD opérations', 'Validation des données'],
+      testing: ['Tests unitaires', 'Coverage reporting'],
+      bug_fix: ['Identification du problème', 'Correction du code'],
+      refactor: ['Restructuration du code', 'Amélioration des performances'],
+      feature: ['Interface utilisateur', 'Logique métier']
+    };
+
+    return defaults[agentType] || defaults.feature;
+  }
+
+  getDefaultTechnologies(agentType) {
+    const defaults = {
+      frontend: 'HTML5, CSS3, JavaScript ES6+',
+      backend: 'Node.js, Express.js',
+      testing: 'Jest, Testing Library',
+      bug_fix: '',
+      refactor: '',
+      feature: 'HTML, CSS, JavaScript'
+    };
+
+    return defaults[agentType] || '';
+  }
+
+  buildDescription(title, details) {
+    let description = `# ${title}\n\n`;
+    
+    description += `## 🎯 Objectif\n${details.mainGoal}\n\n`;
+    
+    if (details.features && details.features.length > 0) {
+      description += `## ✨ Fonctionnalités requises\n`;
+      details.features.forEach(feature => {
+        description += `- ${feature}\n`;
+      });
+      description += '\n';
+    }
+    
+    description += `## 🎨 Style visuel\n`;
+    const styleDescriptions = {
+      modern: 'Style moderne avec animations fluides, gradients et effets visuels contemporains',
+      minimal: 'Design minimaliste, épuré, avec beaucoup d\'espaces blancs et typographie claire',
+      colorful: 'Interface colorée et dynamique avec des éléments visuels marquants',
+      professional: 'Apparence professionnelle et sobre, appropriée pour le business',
+      dark: 'Mode sombre avec couleurs contrastées et interface élégante',
+      custom: 'Style personnalisé selon les spécifications du projet'
+    };
+    description += `${styleDescriptions[details.style] || 'Style moderne'}\n\n`;
+    
+    if (details.technologies && details.technologies.trim()) {
+      description += `## ⚙️ Technologies\n${details.technologies}\n\n`;
+    }
+    
+    if (details.constraints && details.constraints.trim()) {
+      description += `## ⚠️ Contraintes\n${details.constraints}\n\n`;
+    }
+    
+    description += `## 📋 Notes\n`;
+    description += `- Assurer la compatibilité mobile et desktop\n`;
+    description += `- Code propre et bien documenté\n`;
+    description += `- Performance optimisée\n`;
+    description += `- Accessibilité prise en compte\n\n`;
+    
+    description += `---\n*Généré via AI Team Orchestrator v1.4.2*`;
+    
+    return description;
   }
 
   getTaskSuggestions(agentType) {
@@ -391,7 +584,7 @@ Plus vous donnez de détails, meilleur sera le résultat !`
 3. Une Pull Request sera créée automatiquement
 4. Vous recevrez une notification
 
-*Généré par AI Team Orchestrator v1.4.0*`;
+*Généré par AI Team Orchestrator v1.4.2*`;
 
       // Créer l'issue avec gh CLI
       const command = `gh issue create --title "${taskDetails.title}" --body "${issueBody}"`;
@@ -1549,7 +1742,7 @@ Plus vous donnez de détails, meilleur sera le résultat !`
     if (!process.argv.slice(2).length) {
       console.clear();
       
-      console.log(chalk.blue.bold('🤖 AI Team Orchestrator v1.4.1'));
+      console.log(chalk.blue.bold('🤖 AI Team Orchestrator v1.4.2'));
       console.log(chalk.cyan('✨ Votre équipe IA gratuite avec Together.ai'));
       console.log(chalk.gray('Zero-Config AI coding team for GitHub\n'));
       
