@@ -1,0 +1,63 @@
+{
+  "name": "ai-team-orchestrator",
+  "version": "1.0.0",
+  "description": "🤖 AI Team Orchestrator - Zero-Config AI coding team for GitHub",
+  "main": "index.js",
+  "type": "module",
+  "bin": {
+    "ai-team": "bin/ai-team.js",
+    "ai-team-install": "bin/install.js"
+  },
+  "scripts": {
+    "install-local": "node ./bin/install.js",
+    "test": "node test/test.js",
+    "setup": "npm run install-local",
+    "demo": "node demo/demo.js"
+  },
+  "files": [
+    "bin/",
+    "templates/",
+    "lib/",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "ai",
+    "github",
+    "automation",
+    "coding",
+    "assistant",
+    "zero-config",
+    "github-actions",
+    "workflow"
+  ],
+  "author": {
+    "name": "AI Team Orchestrator",
+    "email": "contact@ai-team-orchestrator.com",
+    "url": "https://github.com/ai-team-orchestrator"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ai-team-orchestrator/ai-team-orchestrator.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ai-team-orchestrator/ai-team-orchestrator/issues"
+  },
+  "homepage": "https://github.com/ai-team-orchestrator/ai-team-orchestrator#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "inquirer": "^9.2.7",
+    "ora": "^7.0.1",
+    "commander": "^11.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.44.0"
+  },
+  "peerDependencies": {
+    "git": "*"
+  }
+}
