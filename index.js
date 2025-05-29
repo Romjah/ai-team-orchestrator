@@ -9,7 +9,7 @@ export { installAITeam, checkStatus, listAgents } from './lib/installer.js';
 export { createDemoIssue, listDemoTypes } from './lib/demo.js';
 
 // Version info
-export const version = '1.0.0';
+export const version = '1.1.0';
 export const name = '@ai-team/orchestrator';
 
 // Quick setup function

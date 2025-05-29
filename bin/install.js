@@ -36,7 +36,7 @@ class AITeamInstaller {
     program
       .name('ai-team-install')
       .description('Installation interactive d\'AI Team Orchestrator pour votre repository GitHub')
-      .version('1.0.0')
+      .version('1.1.0')
       .option('-t, --type <type>', 'Type d\'installation (zero-config, full, custom)', 'zero-config')
       .option('-f, --force', 'Forcer la réinstallation sans confirmation', false)
       .option('-v, --verbose', 'Mode verbose pour plus de détails', false)
