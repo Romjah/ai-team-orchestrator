@@ -36,7 +36,7 @@ class AITeamCLI {
     this.program
       .name('ai-team')
       .description('🤖 AI Team Orchestrator - Zero-Config AI coding team for GitHub')
-      .version('1.4.3')
+      .version('1.5.0')
       .option('-v, --verbose', 'Mode verbose pour plus de détails')
       .option('--no-color', 'Désactiver les couleurs')
       .hook('preAction', (thisCommand) => {
