@@ -1,6 +1,6 @@
 # 🤖 AI Team Orchestrator
 
-[![npm version](https://img.shields.io/npm/v/@ai-team/orchestrator.svg)](https://www.npmjs.com/package/@ai-team/orchestrator)
+[![npm version](https://img.shields.io/npm/v/ai-team-orchestrator.svg)](https://www.npmjs.com/package/ai-team-orchestrator)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?logo=github-actions&logoColor=white)](https://github.com/features/actions)
 
@@ -11,7 +11,7 @@
 
 ```bash
 # Installation globale
-npm install -g @ai-team/orchestrator
+npm install -g ai-team-orchestrator
 
 # Configuration de la clé API (assistant interactif)
 ai-team setup-api
@@ -45,11 +45,11 @@ L'assistant vous guide étape par étape :
 2. **Obtenez votre clé API** :
    - Allez sur https://api.together.ai/settings/api-keys
    - Créez une nouvelle clé API
-   - Copiez la clé (commence par `sk-...`)
+   - Copiez la clé (format alphanumérique)
 3. **Configurez la clé** :
    ```bash
    # Créez un fichier .env à la racine de votre projet
-   echo "TOGETHER_AI_API_KEY=sk-votre-cle-api" > .env
+   echo "TOGETHER_AI_API_KEY=votre-cle-api" > .env
    ```
 
 ### Vérification de la configuration
@@ -169,7 +169,7 @@ ai-team fix       # Réparations automatiques
 
 1. **Configuration initiale** (une seule fois)
    ```bash
-   npm install -g @ai-team/orchestrator
+   npm install -g ai-team-orchestrator
    ai-team setup-api  # Assistant interactif
    ```
 
@@ -212,13 +212,13 @@ MIT © AI Team Orchestrator
 ---
 
 **🚀 Prêt à révolutionner votre workflow de développement ?**  
-`npm install -g @ai-team/orchestrator && ai-team setup-api`
+`npm install -g ai-team-orchestrator && ai-team setup-api`
 
 ## 🛠️ Development
 
 ```bash
 # Clone the repository
-git clone https://github.com/ai-team-orchestrator/ai-team-orchestrator.git
+git clone https://github.com/Romjah/ai-team-orchestrator.git
 cd ai-team-orchestrator
 
 # Install dependencies
@@ -346,25 +346,25 @@ MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🔗 Links
 
-- **GitHub Repository**: [ai-team-orchestrator/ai-team-orchestrator](https://github.com/ai-team-orchestrator/ai-team-orchestrator)
-- **NPM Package**: [@ai-team/orchestrator](https://npmjs.com/package/@ai-team/orchestrator)
-- **Documentation**: [docs.ai-team-orchestrator.com](https://docs.ai-team-orchestrator.com)
-- **Support**: [GitHub Issues](https://github.com/ai-team-orchestrator/ai-team-orchestrator/issues)
+- **GitHub Repository**: [Romjah/ai-team-orchestrator](https://github.com/Romjah/ai-team-orchestrator)
+- **NPM Package**: [ai-team-orchestrator](https://www.npmjs.com/package/ai-team-orchestrator)
+- **Documentation**: [GitHub Wiki](https://github.com/Romjah/ai-team-orchestrator/wiki)
+- **Support**: [GitHub Issues](https://github.com/Romjah/ai-team-orchestrator/issues)
 
 ## 🙋 Support
 
-- 📖 **Documentation**: Check our [complete guide](GUIDE-FINAL-ZERO-CONFIG.md)
-- 🐛 **Bug Reports**: [Create an issue](https://github.com/ai-team-orchestrator/ai-team-orchestrator/issues)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/ai-team-orchestrator/ai-team-orchestrator/discussions)
-- 📧 **Email**: contact@ai-team-orchestrator.com
+- 📖 **Documentation**: Consultez notre [guide complet](GUIDE-FINAL-ZERO-CONFIG.md)
+- 🐛 **Bug Reports**: [Créez une issue](https://github.com/Romjah/ai-team-orchestrator/issues)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/Romjah/ai-team-orchestrator/discussions)
+- 📧 **Email**: romain.jahier.pro@gmail.com
 
 ---
 
-**🎉 Ready to revolutionize your development workflow?**
+**🎉 Prêt à révolutionner votre workflow de développement ?**
 
 ```bash
-npm install -g @ai-team/orchestrator
+npm install -g ai-team-orchestrator
 ai-team setup-api
 ```
 
-*Your AI coding team is just one command away!* 🤖✨ 
+*Votre équipe IA de développement n'est qu'à une commande !* 🤖✨ 
