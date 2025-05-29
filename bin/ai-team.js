@@ -35,7 +35,7 @@ class AITeamCLI {
     this.program
       .name('ai-team')
       .description('🤖 AI Team Orchestrator - Zero-Config AI coding team for GitHub')
-      .version('1.4.0')
+      .version('1.4.1')
       .option('-v, --verbose', 'Mode verbose pour plus de détails')
       .option('--no-color', 'Désactiver les couleurs')
       .hook('preAction', (thisCommand) => {
@@ -1549,7 +1549,7 @@ Plus vous donnez de détails, meilleur sera le résultat !`
     if (!process.argv.slice(2).length) {
       console.clear();
       
-      console.log(chalk.blue.bold('🤖 AI Team Orchestrator v1.4.0'));
+      console.log(chalk.blue.bold('🤖 AI Team Orchestrator v1.4.1'));
       console.log(chalk.cyan('✨ Votre équipe IA gratuite avec Together.ai'));
       console.log(chalk.gray('Zero-Config AI coding team for GitHub\n'));
       
