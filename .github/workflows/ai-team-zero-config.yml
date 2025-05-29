@@ -1,0 +1,124 @@
+name: 🤖 AI Team Zero-Config
+
+on:
+  issues:
+    types: [opened, edited]
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      task_description:
+        description: 'Description de la tâche à automatiser'
+        required: true
+        type: string
+
+jobs:
+  ai-coding:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    
+    steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: 🐍 Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: 🔍 Analyze Task
+      id: analyze
+      run: python3 .github/scripts/zero_config_generator.py
+      env:
+        ACTION: 'analyze'
+        GITHUB_EVENT_NAME: ${{ github.event_name }}
+        ISSUE_TITLE: ${{ github.event.issue.title }}
+        ISSUE_BODY: ${{ github.event.issue.body }}
+        COMMENT_BODY: ${{ github.event.comment.body }}
+        MANUAL_TASK: ${{ github.event.inputs.task_description }}
+
+    - name: 🤖 Generate Code
+      id: generate
+      run: python3 .github/scripts/zero_config_generator.py
+      env:
+        ACTION: 'generate'
+        TASK: ${{ steps.analyze.outputs.task }}
+        AGENT: ${{ steps.analyze.outputs.agent }}
+        TASK_TYPE: ${{ steps.analyze.outputs.task_type }}
+
+    - name: 💻 Apply Generated Code
+      id: apply
+      run: python3 .github/scripts/zero_config_generator.py
+      env:
+        ACTION: 'apply'
+
+    - name: 📝 Create Pull Request
+      if: steps.apply.outputs.changes_made == 'true'
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: |
+          🤖 Code automatique généré par AI Team
+          
+          Agent: ${{ steps.analyze.outputs.agent }}
+          Type: ${{ steps.analyze.outputs.task_type }}
+        title: "🤖 [AI Team] ${{ steps.analyze.outputs.task_summary }}"
+        body: |
+          ## 🤖 Pull Request générée automatiquement
+          
+          **Agent IA utilisé:** ${{ steps.analyze.outputs.agent }}
+          **Type de tâche:** ${{ steps.analyze.outputs.task_type }}
+          
+          ### 📋 Tâche demandée
+          ${{ steps.analyze.outputs.task }}
+          
+          ### 📁 Fichiers créés
+          ${{ steps.apply.outputs.files_created }}
+          
+          ### ✨ Fonctionnalités
+          - Code généré automatiquement par IA
+          - Tests inclus selon le type de tâche
+          - Prêt à l'emploi
+          
+          ---
+          *Généré par AI Team Orchestrator - Zero Config*
+          
+          **🎯 Aucune configuration manuelle requise !**
+        branch: ai-team/auto-${{ github.run_number }}
+        delete-branch: true
+
+    - name: 📊 Update Issue Status
+      if: github.event_name == 'issues' || github.event_name == 'issue_comment'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const issueNumber = context.issue.number;
+          const success = '${{ steps.apply.outputs.changes_made }}' === 'true';
+          
+          const comment = success ? 
+            `🎉 **AI Team a traité votre demande !**
+            
+            ✅ **Pull Request créée automatiquement**
+            🤖 **Agent utilisé:** ${{ steps.analyze.outputs.agent }}
+            📁 **Fichiers créés:** ${{ steps.apply.outputs.files_created }}
+            
+            **🔥 Aucune configuration manuelle nécessaire !**
+            
+            La PR contient du code prêt à l'emploi généré par notre équipe d'IA.` :
+            `⚠️ **Aucun code généré**
+            
+            L'IA n'a pas pu traiter cette demande automatiquement.
+            Essayez avec une description plus précise.`;
+          
+          github.rest.issues.createComment({
+            issue_number: issueNumber,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          }); 
