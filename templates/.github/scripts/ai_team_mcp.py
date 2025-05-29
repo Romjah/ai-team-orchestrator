@@ -680,6 +680,20 @@ def main():
     try:
         ai_team = AITeamMCP()
         
+        # Vérifier que la clé API Together.ai est présente
+        if not ai_team.together_api_key:
+            print("❌ ERREUR: Clé API Together.ai manquante!")
+            print("📋 SOLUTION:")
+            print("1. Allez dans Settings → Secrets and variables → Actions")
+            print("2. Créez un secret: TOGETHER_AI_API_KEY")
+            print("3. Valeur: 7b61ccee2b0b0f9d4b842862034eea9b18c5e4e26728ef8714b581c0cf0c91fe")
+            print("4. Relancez le workflow")
+            set_github_output('changes_made', 'false')
+            set_github_output('error', 'Missing TOGETHER_AI_API_KEY secret')
+            sys.exit(1)
+        
+        print(f"✅ Together.ai API key found (length: {len(ai_team.together_api_key)})")
+        
         # Analyser la tâche
         task_info = ai_team.analyze_task()
         print(f"🤖 Task analyzed: {task_info['task_type']}")
@@ -706,6 +720,7 @@ def main():
     except Exception as e:
         print(f"❌ Error: {e}")
         set_github_output('changes_made', 'false')
+        set_github_output('error', str(e))
         sys.exit(1)
 
 if __name__ == "__main__":

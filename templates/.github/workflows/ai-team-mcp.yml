@@ -47,6 +47,24 @@ jobs:
           ISSUE_TITLE: ${{ github.event.issue.title || github.event.inputs.task_description }}
           ISSUE_BODY: ${{ github.event.issue.body || 'Create modern code' }}
         run: |
+          # Vérifier que la clé API Together.ai est configurée
+          if [ -z "$TOGETHER_AI_API_KEY" ]; then
+            echo "❌ ERREUR: Secret TOGETHER_AI_API_KEY non configuré!"
+            echo ""
+            echo "📋 SOLUTION:"
+            echo "1. Allez dans Settings → Secrets and variables → Actions"
+            echo "2. Créez un nouveau secret repository"
+            echo "3. Nom: TOGETHER_AI_API_KEY"
+            echo "4. Valeur: 7b61ccee2b0b0f9d4b842862034eea9b18c5e4e26728ef8714b581c0cf0c91fe"
+            echo "5. Relancez ce workflow"
+            echo ""
+            echo "changes_made=false" >> $GITHUB_OUTPUT
+            echo "error=Missing TOGETHER_AI_API_KEY secret" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+          
+          echo "✅ Together.ai API key configured"
+          
           # Install Python dependencies
           pip install requests python-dotenv typing-extensions
           
@@ -115,7 +133,7 @@ jobs:
             commentBody += '1. Review le code généré dans la PR\n';
             commentBody += '2. Tester les fonctionnalités\n';
             commentBody += '3. Merger la PR si approuvé\n\n';
-            commentBody += 'AI Team Orchestrator v1.3.0 + Together.ai';
+            commentBody += 'AI Team Orchestrator v1.4.3 + Together.ai';
 
             await github.rest.issues.createComment({
               owner: context.repo.owner,
@@ -126,28 +144,65 @@ jobs:
             
       - name: 💬 Comment No Changes
         if: steps.ai_team.outputs.changes_made != 'true' && github.event.issue.number
-        uses: actions/github-script@v7
-        with:
-          script: |
-            let commentBody = '## 🤖 AI Team MCP a analysé votre demande\n\n';
-            commentBody += '**Agent assigné:** ${{ steps.ai_team.outputs.agent }}\n';
-            commentBody += '**Tâche:** ${{ steps.ai_team.outputs.task_summary }}\n\n';
-            commentBody += '⚠️ **Aucun fichier généré**\n\n';
-            commentBody += 'L\'agent a analysé mais n\'a pas créé de fichiers.\n\n';
-            commentBody += '💡 **Suggestions:**\n';
-            commentBody += '- Reformulez de manière plus spécifique\n';
-            commentBody += '- Précisez le type de code souhaité\n';
-            commentBody += '- Ajoutez des détails techniques\n\n';
-            commentBody += '---\n';
-            commentBody += '*AI Team Orchestrator v1.3.0 avec Together.ai*';
-
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: commentBody
-            });
-            
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ERROR: ${{ steps.ai_team.outputs.error }}
+          AGENT: ${{ steps.ai_team.outputs.agent }}
+          TASK_SUMMARY: ${{ steps.ai_team.outputs.task_summary }}
+        run: |
+          if [[ "$ERROR" == *"Missing TOGETHER_AI_API_KEY"* ]]; then
+            echo "## ❌ Configuration manquante" > comment.md
+            echo "" >> comment.md
+            echo "**Problème:** La clé API Together.ai n'est pas configurée." >> comment.md
+            echo "" >> comment.md
+            echo "**📋 Solution:**" >> comment.md
+            echo "1. Allez dans \`Settings\` → \`Secrets and variables\` → \`Actions\`" >> comment.md
+            echo "2. Cliquez sur \`New repository secret\`" >> comment.md
+            echo "3. **Nom:** \`TOGETHER_AI_API_KEY\`" >> comment.md
+            echo "4. **Valeur:** \`7b61ccee2b0b0f9d4b842862034eea9b18c5e4e26728ef8714b581c0cf0c91fe\`" >> comment.md
+            echo "5. Cliquez \`Add secret\`" >> comment.md
+            echo "6. Relancez ce workflow" >> comment.md
+            echo "" >> comment.md
+            echo "**💡 Aide:** Together.ai est gratuit et utilise des modèles open source (Llama + CodeLlama)." >> comment.md
+            echo "" >> comment.md
+            echo "---" >> comment.md
+            echo "*AI Team Orchestrator v1.4.3 - Configuration requise*" >> comment.md
+          elif [ -n "$ERROR" ]; then
+            echo "## ❌ Erreur AI Team" > comment.md
+            echo "" >> comment.md
+            echo "**Problème rencontré:** $ERROR" >> comment.md
+            echo "" >> comment.md
+            echo "**🔍 Diagnostic:**" >> comment.md
+            echo "- Vérifiez la configuration des secrets GitHub" >> comment.md
+            echo "- Consultez les logs dans l'onglet Actions" >> comment.md
+            echo "" >> comment.md
+            echo "**💡 Aide:**" >> comment.md
+            echo "- Essayez de relancer le workflow" >> comment.md
+            echo "- Vérifiez que Together.ai est bien configuré" >> comment.md
+            echo "" >> comment.md
+            echo "---" >> comment.md
+            echo "*AI Team Orchestrator v1.4.3 - Erreur détectée*" >> comment.md
+          else
+            echo "## 🤖 AI Team a analysé votre demande" > comment.md
+            echo "" >> comment.md
+            echo "**Agent assigné:** $AGENT" >> comment.md
+            echo "**Tâche:** $TASK_SUMMARY" >> comment.md
+            echo "" >> comment.md
+            echo "⚠️ **Aucun fichier généré**" >> comment.md
+            echo "" >> comment.md
+            echo "L'agent a analysé mais n'a pas créé de fichiers." >> comment.md
+            echo "" >> comment.md
+            echo "**💡 Suggestions:**" >> comment.md
+            echo "- Reformulez de manière plus spécifique" >> comment.md
+            echo "- Précisez le type de code souhaité" >> comment.md
+            echo "- Ajoutez des détails techniques" >> comment.md
+            echo "" >> comment.md
+            echo "---" >> comment.md
+            echo "*AI Team Orchestrator v1.4.3 avec Together.ai*" >> comment.md
+          fi
+          
+          gh issue comment ${{ github.event.issue.number }} --body-file comment.md
+          
       - name: 🎉 Summary
         run: |
           echo "🤖 AI Team Together.ai completed!"

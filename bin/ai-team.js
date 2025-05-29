@@ -35,7 +35,7 @@ class AITeamCLI {
     this.program
       .name('ai-team')
       .description('🤖 AI Team Orchestrator - Zero-Config AI coding team for GitHub')
-      .version('1.4.2')
+      .version('1.4.3')
       .option('-v, --verbose', 'Mode verbose pour plus de détails')
       .option('--no-color', 'Désactiver les couleurs')
       .hook('preAction', (thisCommand) => {
@@ -490,7 +490,7 @@ class AITeamCLI {
     description += `- Performance optimisée\n`;
     description += `- Accessibilité prise en compte\n\n`;
     
-    description += `---\n*Généré via AI Team Orchestrator v1.4.2*`;
+    description += `---\n*Généré via AI Team Orchestrator v1.4.3*`;
     
     return description;
   }
@@ -584,7 +584,7 @@ class AITeamCLI {
 3. Une Pull Request sera créée automatiquement
 4. Vous recevrez une notification
 
-*Généré par AI Team Orchestrator v1.4.2*`;
+*Généré par AI Team Orchestrator v1.4.3*`;
 
       // Créer l'issue avec gh CLI
       const command = `gh issue create --title "${taskDetails.title}" --body "${issueBody}"`;
@@ -1742,7 +1742,7 @@ class AITeamCLI {
     if (!process.argv.slice(2).length) {
       console.clear();
       
-      console.log(chalk.blue.bold('🤖 AI Team Orchestrator v1.4.2'));
+      console.log(chalk.blue.bold('🤖 AI Team Orchestrator v1.4.3'));
       console.log(chalk.cyan('✨ Votre équipe IA gratuite avec Together.ai'));
       console.log(chalk.gray('Zero-Config AI coding team for GitHub\n'));
       
