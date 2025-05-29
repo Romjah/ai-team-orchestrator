@@ -1,6 +1,6 @@
 {
   "name": "ai-team-orchestrator",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "🤖 Zero-Config AI coding team for GitHub with intuitive Together.ai API setup",
   "main": "index.js",
   "type": "module",
