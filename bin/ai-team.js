@@ -14,6 +14,7 @@ import {
   ErrorHandler,
   AITeamError
 } from '../lib/utils.js';
+import { APIKeyManager, ensureAPIKeyConfigured } from '../lib/api-config.js';
 
 class AITeamCLI {
   constructor() {
@@ -65,6 +66,7 @@ class AITeamCLI {
     this.setupUpdateCommand();
     this.setupDebugCommand();
     this.setupFixCommand();
+    this.setupSetupApiCommand();
   }
 
   setupCreateCommand() {
@@ -157,40 +159,80 @@ class AITeamCLI {
   async checkConfiguration(quick) {
     const spinner = this.progressManager.start('Vérification de la configuration Together.ai...');
     
-    // Simuler la vérification de la configuration
-    // En réalité, on ne peut pas vérifier le secret GitHub depuis le CLI local
-    
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      spinner.succeed('✅ Configuration vérifiée');
+      const apiManager = new APIKeyManager();
       
-      if (!quick) {
-        console.log(chalk.cyan('\n💡 Configuration requise:'));
-        console.log(chalk.white('   🔑 Secret GitHub: TOGETHER_AI_API_KEY'));
-        console.log(chalk.white('   🤖 Modèle classification: meta-llama/Llama-2-7b-chat-hf'));
-        console.log(chalk.white('   💻 Modèle génération: codellama/CodeLlama-7b-Instruct-hf'));
+      // Vérifier si la clé API est configurée localement
+      const isConfigured = apiManager.isAPIKeyConfigured();
+      const apiKey = apiManager.getAPIKey();
+      
+      if (isConfigured && apiKey) {
+        spinner.succeed('✅ Clé API Together.ai configurée');
+        
+        if (!quick) {
+          console.log(chalk.cyan('\n💡 Configuration détectée:'));
+          console.log(chalk.white(`   🔑 Clé API: ${apiKey.substring(0, 8)}...${apiKey.slice(-4)}`));
+          console.log(chalk.white('   🤖 Modèle classification: meta-llama/Llama-2-7b-chat-hf'));
+          console.log(chalk.white('   💻 Modèle génération: codellama/CodeLlama-7b-Instruct-hf'));
+        }
+        
+        // Test rapide de la clé si possible
+        const isValid = await apiManager.testAPIKey(apiKey);
+        if (!isValid) {
+          console.log(chalk.yellow('⚠️  Impossible de valider la clé API en ligne'));
+          console.log(chalk.gray('   (Vérifiez votre connexion internet)'));
+        }
+        
+      } else {
+        spinner.fail('❌ Clé API Together.ai non configurée');
+        
+        console.log(chalk.red('\n🚨 Configuration Together.ai manquante !'));
+        console.log(chalk.white('Cette étape est obligatoire pour utiliser AI Team.'));
+        
+        const { setupNow } = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'setupNow',
+            message: '🔧 Voulez-vous configurer la clé API maintenant ?',
+            default: true
+          }
+        ]);
+        
+        if (setupNow) {
+          const success = await apiManager.setupAPIKeyInteractively();
+          if (!success) {
+            console.log(chalk.red('❌ Configuration échouée. Impossible de continuer.'));
+            process.exit(1);
+          }
+          console.log(chalk.green('✅ Configuration terminée ! Continuons...'));
+        } else {
+          console.log(chalk.yellow('\n⏸️  Configuration reportée.'));
+          console.log(chalk.white('💡 Vous pouvez configurer plus tard avec:'));
+          console.log(chalk.white('   ai-team setup-api'));
+          process.exit(0);
+        }
       }
       
     } catch (error) {
-      spinner.fail('❌ Configuration incomplète');
+      spinner.fail('❌ Erreur de configuration');
       
-      console.log(chalk.red('\n🚨 Configuration Together.ai manquante !'));
-      console.log(chalk.white('\n📋 Actions requises:'));
-      console.log(chalk.white('1. Allez dans Settings → Secrets → Actions sur GitHub'));
-      console.log(chalk.white('2. Créez un secret: TOGETHER_AI_API_KEY'));
-      console.log(chalk.white('3. Valeur: 7b61ccee2b0b0f9d4b842862034eea9b18c5e4e26728ef8714b581c0cf0c91fe'));
+      console.log(chalk.red(`\n🚨 Erreur: ${error.message}`));
+      console.log(chalk.white('\n📋 Solutions:'));
+      console.log(chalk.white('1. Configurez la clé API: ai-team setup-api'));
+      console.log(chalk.white('2. Vérifiez votre fichier .env'));
+      console.log(chalk.white('3. Contactez le support si le problème persiste'));
       
       const answer = await inquirer.prompt([
         {
           type: 'confirm',
           name: 'continue',
-          message: '⚠️  Continuer sans vérifier la configuration ?',
+          message: '⚠️  Continuer malgré l\'erreur ?',
           default: false
         }
       ]);
       
       if (!answer.continue) {
-        console.log(chalk.yellow('⏸️  Configurez Together.ai et relancez ai-team create'));
+        console.log(chalk.yellow('⏸️  Opération annulée.'));
         process.exit(0);
       }
     }
@@ -1705,6 +1747,76 @@ class AITeamCLI {
     console.log(chalk.yellow('🔄 Vérification de la syntaxe du workflow...'));
     console.log('  ✅ Syntaxe du workflow déjà moderne');
     return 0;
+  }
+
+  setupSetupApiCommand() {
+    this.program
+      .command('setup-api')
+      .description('🔑 Assistant de configuration pour la clé API Together.ai')
+      .option('--check', 'Vérifier le statut de la clé API')
+      .action(async (options) => {
+        try {
+          await this.handleSetupApiCommand(options);
+        } catch (error) {
+          this.errorHandler.handle(error);
+          process.exit(1);
+        }
+      });
+  }
+
+  async handleSetupApiCommand(options) {
+    const apiManager = new APIKeyManager();
+    
+    if (options.check) {
+      // Mode vérification
+      this.logger.title('Vérification de la clé API');
+      await apiManager.checkAPIKeyStatus();
+      return;
+    }
+    
+    // Mode configuration
+    this.logger.title('Assistant de configuration - Clé API Together.ai');
+    
+    // Vérifier si déjà configurée
+    if (apiManager.isAPIKeyConfigured()) {
+      console.log(chalk.yellow('\n⚠️  Une clé API est déjà configurée.'));
+      
+      const { action } = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'action',
+          message: '🔧 Que voulez-vous faire ?',
+          choices: [
+            { name: '🔍 Vérifier la clé actuelle', value: 'check' },
+            { name: '🔄 Reconfigurer une nouvelle clé', value: 'reconfigure' },
+            { name: '❌ Annuler', value: 'cancel' }
+          ]
+        }
+      ]);
+      
+      if (action === 'check') {
+        await apiManager.checkAPIKeyStatus();
+        return;
+      } else if (action === 'cancel') {
+        console.log(chalk.yellow('⏸️  Configuration annulée.'));
+        return;
+      }
+      // Continue pour reconfigurer
+    }
+    
+    // Lancer l'assistant interactif
+    const success = await apiManager.setupAPIKeyInteractively();
+    
+    if (success) {
+      console.log(chalk.green('\n🎉 Parfait ! Votre clé API est maintenant configurée.'));
+      console.log(chalk.cyan('\n💡 Prochaines étapes:'));
+      console.log(chalk.white('   • ai-team install    - Installer AI Team dans votre repo'));
+      console.log(chalk.white('   • ai-team create     - Créer votre première tâche'));
+      console.log(chalk.white('   • ai-team demo       - Essayer avec une démo'));
+    } else {
+      console.log(chalk.red('\n❌ Configuration échouée.'));
+      console.log(chalk.white('💡 Vous pouvez réessayer avec: ai-team setup-api'));
+    }
   }
 
   setupErrorHandling() {

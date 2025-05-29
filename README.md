@@ -1,146 +1,218 @@
 # 🤖 AI Team Orchestrator
 
-[![npm version](https://badge.fury.io/js/%40ai-team%2Forchestrator.svg)](https://badge.fury.io/js/%40ai-team%2Forchestrator)
+[![npm version](https://img.shields.io/npm/v/@ai-team/orchestrator.svg)](https://www.npmjs.com/package/@ai-team/orchestrator)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?logo=github-actions&logoColor=white)](https://github.com/features/actions)
 
-> **Zero-Config AI coding team for GitHub** - Install once, code forever with AI assistance
+> **Zero-Config AI coding team pour GitHub avec Together.ai** 🚀  
+> Transformez vos issues GitHub en code fonctionnel automatiquement !
 
-## ✨ Features
-
-- **🚀 Zero Configuration** - Works immediately after installation
-- **🤖 6 Specialized AI Agents** - Frontend, Backend, QA, Bug Hunter, Code Architect, Full-Stack
-- **⚡ Automatic Detection** - Intelligently selects the right agent based on your issue
-- **💰 100% Free** - Uses GitHub Actions (2000 minutes/month included)
-- **📦 Professional Package** - NPM installable with CLI tools
-- **🎯 Smart Triggers** - Keywords automatically select the appropriate specialist
-
-## 🚀 Quick Start
-
-### Installation
+## 🚀 Installation rapide
 
 ```bash
-# Install globally
+# Installation globale
 npm install -g @ai-team/orchestrator
 
-# Or use directly with npx
-npx @ai-team/orchestrator install
-```
+# Configuration de la clé API (assistant interactif)
+ai-team setup-api
 
-### Setup (30 seconds)
-
-```bash
-# Navigate to your Git repository
-cd your-project
-
-# Install AI Team
+# Installation dans votre projet
+cd votre-projet
 ai-team install
-
-# Commit and push
-git add . && git commit -m "🤖 Add AI Team" && git push
-
-# Test with a demo issue
-ai-team demo --type frontend
 ```
 
-## 🤖 Available Agents
+## 📋 Prérequis
 
-| Agent | Specialization | Triggered by Keywords |
-|-------|---------------|----------------------|
-| 🎨 **Frontend Specialist** | HTML, CSS, JS, React, Vue | `ui`, `css`, `html`, `component`, `frontend` |
-| ⚙️ **Backend Specialist** | APIs, servers, databases | `api`, `server`, `database`, `backend` |
-| 🐛 **Bug Hunter** | Bug fixing, debugging | `bug`, `fix`, `error`, `problème` |
-| 🧪 **QA Engineer** | Testing, automation | `test`, `testing`, `spec`, `qa` |
-| 🏗️ **Code Architect** | Refactoring, optimization | `refactor`, `optimize`, `clean` |
-| 🚀 **Full-Stack Developer** | General development | Any other keywords |
+- **Node.js** 18+ et npm
+- **Git** configuré
+- **Compte Together.ai** (gratuit) pour l'API
+- **Repository GitHub** (public ou privé)
 
-## 📖 Usage
+## 🔑 Configuration API (Nouvelle approche intuitive !)
 
-### CLI Commands
+### Option 1: Assistant automatique (Recommandé)
+```bash
+ai-team setup-api
+```
+L'assistant vous guide étape par étape :
+- ✅ Création de compte Together.ai
+- ✅ Récupération de la clé API
+- ✅ Configuration automatique
+- ✅ Test de fonctionnement
+
+### Option 2: Configuration manuelle
+1. **Créez un compte gratuit sur [Together.ai](https://together.ai)**
+2. **Obtenez votre clé API** :
+   - Allez sur https://api.together.ai/settings/api-keys
+   - Créez une nouvelle clé API
+   - Copiez la clé (commence par `sk-...`)
+3. **Configurez la clé** :
+   ```bash
+   # Créez un fichier .env à la racine de votre projet
+   echo "TOGETHER_AI_API_KEY=sk-votre-cle-api" > .env
+   ```
+
+### Vérification de la configuration
+```bash
+# Vérifier le statut de la clé API
+ai-team setup-api --check
+
+# Reconfigurer si nécessaire
+ai-team setup-api
+```
+
+## 💻 Utilisation
+
+### Méthode interactive (Recommandée)
+```bash
+ai-team create
+```
+Interface guidée pour :
+- ✨ Sélectionner votre agent IA spécialisé
+- 📝 Décrire votre tâche en détail
+- 🎨 Choisir le style et les technologies
+- 🚀 Lancer la génération automatique
+
+### Méthode rapide
+```bash
+# Créer une démo frontend
+ai-team demo frontend
+
+# Créer une démo backend
+ai-team demo backend
+
+# Voir toutes les démos disponibles
+ai-team demo --list
+```
+
+## 🤖 Agents IA disponibles
+
+| Agent | Spécialité | Parfait pour |
+|-------|------------|--------------|
+| 🎨 **Frontend Specialist** | UI/UX, CSS, HTML | Landing pages, composants, animations |
+| ⚙️ **Backend Specialist** | APIs, serveurs, BDD | REST APIs, authentification, CRUD |
+| 🧪 **QA Engineer** | Tests, qualité | Tests unitaires, intégration, e2e |
+| 🐛 **Bug Hunter** | Debug, fixes | Corrections de bugs, optimisation |
+| 🏗️ **Code Architect** | Refactoring, structure | Amélioration du code, architecture |
+| 🚀 **Full-Stack Developer** | Développement général | Fonctionnalités complètes, projets |
+
+## 🔧 Commandes disponibles
 
 ```bash
-# Install AI Team in current repository
-ai-team install [--type zero-config|full|github-app] [--force]
+# Configuration et installation
+ai-team setup-api          # Assistant configuration API
+ai-team install            # Installer AI Team dans le repo
+ai-team status             # Vérifier l'installation
 
-# Check installation status
-ai-team status
+# Création de tâches
+ai-team create             # Mode interactif complet
+ai-team demo <type>        # Démos rapides
 
-# List available agents
-ai-team agents
+# Gestion et debug
+ai-team agents             # Lister les agents disponibles
+ai-team doctor             # Diagnostics automatiques
+ai-team debug              # Debug avancé
+ai-team fix                # Réparations automatiques
 
-# Create demo issue to test
-ai-team demo [--type frontend|backend|testing|bug|refactor]
-
-# Initialize new project with AI Team
-ai-team init <project-name>
-
-# Remove AI Team
-ai-team uninstall [--force]
+# Aide
+ai-team --help            # Aide générale
+ai-team <command> --help  # Aide spécifique
 ```
 
-### Programmatic Usage
+## ✨ Fonctionnalités
 
-```javascript
-import { quickSetup, createDemoIssue } from '@ai-team/orchestrator';
+### 🎯 Ce que fait AI Team
+- **Analyse intelligente** des issues GitHub avec Together.ai
+- **Sélection automatique** de l'agent IA approprié
+- **Génération de code** moderne et fonctionnel
+- **Création automatique** de Pull Requests
+- **Support multi-langages** (HTML, CSS, JS, Python, etc.)
+- **Templates adaptatifs** selon le type de projet
 
-// Install AI Team programmatically
-const result = await quickSetup({ type: 'zero-config' });
+### 🚀 Modèles IA utilisés
+- **Classification** : `meta-llama/Llama-2-7b-chat-hf` (gratuit)
+- **Génération de code** : `codellama/CodeLlama-7b-Instruct-hf` (gratuit)
+- **API** : Together.ai (gratuite pour commencer)
 
-// Create demo issue
-await createDemoIssue('frontend');
-```
+## 🛠️ Résolution de problèmes
 
-## 🎯 How It Works
+### Problèmes fréquents
 
-1. **Create GitHub Issue** with your coding request
-2. **AI Analyzes** the issue content and keywords
-3. **Agent Selection** happens automatically based on task type
-4. **Code Generation** creates complete, working code
-5. **Pull Request** is created automatically with the solution
-
-### Example Workflow
-
-```
-Issue: "Create a modern landing page with CSS animations"
-    ↓
-Frontend Specialist selected 🎨
-    ↓
-Generates: index.html + styles.css + script.js
-    ↓
-Pull Request created automatically ✅
-```
-
-## 📋 Installation Types
-
-### Zero-Config (Recommended)
-- **Perfect for**: 99% of use cases
-- **Setup time**: 30 seconds
-- **Requirements**: None
-- **Features**: All core functionality
-
+**❌ Clé API invalide**
 ```bash
-ai-team install --type zero-config
+# Vérifier et reconfigurer
+ai-team setup-api --check
+ai-team setup-api
 ```
 
-### Full Configuration
-- **Perfect for**: Advanced users wanting external APIs
-- **Setup time**: 2 minutes
-- **Requirements**: API tokens (Hugging Face, Groq)
-- **Features**: Enhanced analysis, external AI models
-
+**❌ AI Team non installé**
 ```bash
-ai-team install --type full
+# Installer dans le projet
+ai-team install --force
 ```
 
-### GitHub App
-- **Perfect for**: Teams wanting web interface
-- **Setup time**: 5 minutes
-- **Requirements**: Vercel account
-- **Features**: Web UI, manual agent selection
-
+**❌ Erreurs GitHub Actions**
 ```bash
-ai-team install --type github-app
+# Diagnostics automatiques
+ai-team doctor
+ai-team debug
 ```
+
+### Support et diagnostics
+```bash
+ai-team doctor    # Diagnostics complets
+ai-team debug     # Informations de debug
+ai-team fix       # Réparations automatiques
+```
+
+## 🎉 Exemple d'utilisation
+
+1. **Configuration initiale** (une seule fois)
+   ```bash
+   npm install -g @ai-team/orchestrator
+   ai-team setup-api  # Assistant interactif
+   ```
+
+2. **Dans votre projet**
+   ```bash
+   cd mon-projet
+   ai-team install
+   ai-team create
+   ```
+
+3. **Créer une tâche**
+   - Sélectionnez "🎨 Frontend Specialist"
+   - Décrivez : "Create a modern landing page with hero section"
+   - Choisissez le style "Moderne avec animations"
+   - ✨ Magie ! Une PR est créée automatiquement
+
+## 🌟 Pourquoi Together.ai ?
+
+- ✅ **Gratuit** pour les modèles open source
+- ✅ **Pas de limite stricte** comme OpenAI
+- ✅ **Modèles Llama et CodeLlama** performants
+- ✅ **API compatible** avec les standards
+- ✅ **Idéal pour le développement** et l'apprentissage
+
+## 📚 Documentation avancée
+
+- [Guide d'installation détaillé](./INSTALLATION.md)
+- [Configuration Together.ai](./TOGETHER_AI_SETUP.md)
+- [Agents IA disponibles](#-agents-ia-disponibles)
+- [Résolution de problèmes](#️-résolution-de-problèmes)
+
+## 🤝 Contribution
+
+Les contributions sont les bienvenues ! Consultez notre [guide de contribution](CONTRIBUTING.md).
+
+## 📄 Licence
+
+MIT © AI Team Orchestrator
+
+---
+
+**🚀 Prêt à révolutionner votre workflow de développement ?**  
+`npm install -g @ai-team/orchestrator && ai-team setup-api`
 
 ## 🛠️ Development
 
@@ -292,7 +364,7 @@ MIT License - see the [LICENSE](LICENSE) file for details.
 
 ```bash
 npm install -g @ai-team/orchestrator
-ai-team install
+ai-team setup-api
 ```
 
 *Your AI coding team is just one command away!* 🤖✨ 

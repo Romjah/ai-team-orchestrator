@@ -20,7 +20,7 @@ async function runTests() {
     const packageContent = await fs.readFile(packagePath, 'utf8');
     const pkg = JSON.parse(packageContent);
     
-    if (pkg.name === 'ai-team-orchestrator') {
+    if (pkg.name === '@ai-team/orchestrator') {
       console.log(chalk.green('✅ Package name correct'));
       passed++;
     } else {
