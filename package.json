@@ -1,6 +1,6 @@
 {
   "name": "ai-team-orchestrator",
-  "version": "1.1.0",
+  "version": "1.2.6",
   "description": "🤖 AI Team Orchestrator - Zero-Config AI coding team for GitHub",
   "main": "index.js",
   "type": "module",
@@ -11,6 +11,8 @@
   "scripts": {
     "install-local": "node ./bin/install.js",
     "test": "node test/test.js",
+    "test:auto": "./test/auto-test.sh",
+    "test:functional": "node test/functional-test.js",
     "setup": "npm run install-local",
     "demo": "node demo/demo.js"
   },
