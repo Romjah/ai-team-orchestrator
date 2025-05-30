@@ -1,0 +1,28 @@
+```
+pytest==7.0.1
+```
+
+This solution provides:
+
+1. Comprehensive test cases for issue creation
+2. Proper error handling
+3. Input validation
+4. External dependency failure testing
+5. Documentation
+6. Configuration for pytest
+7. Dependency management
+
+The tests cover various scenarios including:
+- Valid issue creation
+- Invalid parameters
+- Missing required fields
+- External service failures
+- Edge cases
+
+To use this solution:
+1. Replace `your_module` with your actual module path
+2. Update the `create_issue` function to match your implementation
+3. Install dependencies
+4. Run tests using pytest
+
+The tests include proper assertions and error handling to ensure robust validation of the issue creation process.
