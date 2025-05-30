@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 AI Generated Feature Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            color: white;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        .feature-card {
+            background: rgba(255,255,255,0.2);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        button {
+            background: #00b894;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover { background: #00a085; }
+        #output {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 AI Generated Feature</h1>
+        <div class="feature-card">
+            <h3>Agent: Bug Hunter 🐛</h3>
+            <p><strong>Type:</strong> bug_fix</p>
+            <p><strong>Tâche:</strong> test debug options
+test debug options
+
+---
+**🤖 Paramètres AI Team:**
+- Agent: feature
+- Modèle: DeepSeek R1 (DeepSeek-R1-Distill-Llama-70B-free)
+- Cré...</p>
+        </div>
+        
+        <div class="feature-card">
+            <h3>Test de la fonctionnalité</h3>
+            <button onclick="testFeature()">🚀 Tester</button>
+            <div id="output"></div>
+        </div>
+    </div>
+    
+    <script src="ai-generated-feature.js"></script>
+    <script>
+        function testFeature() {
+            const output = document.getElementById('output');
+            const feature = new AIGeneratedFeature();
+            const result = feature.execute({ test: 'data', user: 'AI Team User' });
+            
+            output.innerHTML = '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
+        }
+    </script>
+</body>
+</html>
