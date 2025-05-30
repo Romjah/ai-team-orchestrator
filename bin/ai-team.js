@@ -53,10 +53,10 @@ class AITeamCLI {
       .action(async (description, options) => {
         try {
           await this.handleQuickCreate(description, options);
-        } catch (error) {
+    } catch (error) {
           console.log(chalk.red(`❌ Erreur: ${error.message}`));
-          process.exit(1);
-        }
+        process.exit(1);
+      }
       });
   }
 
@@ -95,8 +95,8 @@ class AITeamCLI {
     const apiKey = await this.ensureQuickSetup();
     
     if (!description) {
-      const answer = await inquirer.prompt([
-        {
+    const answer = await inquirer.prompt([
+      {
           type: 'input',
           name: 'description',
           message: '📝 Décrivez votre tâche:',
@@ -120,7 +120,7 @@ class AITeamCLI {
 
     if (options.autoIssue) {
       await this.createGitHubIssue(description, description, options.type, apiKey);
-    } else {
+      } else {
       console.log(chalk.cyan('\n🎯 Prêt ! Utilisez --auto-issue pour créer l\'issue GitHub'));
     }
   }
@@ -278,7 +278,7 @@ Tâche de type ${type} à implémenter avec DeepSeek R1.
       console.log(chalk.cyan(`📋 Issue #${issue.number}: ${issue.title}`));
       console.log(chalk.cyan(`🔗 URL: ${issue.html_url}`));
       console.log(chalk.yellow('🚀 Le workflow AI Team va se déclencher avec DeepSeek R1...'));
-
+      
     } catch (error) {
       console.log(chalk.red(`❌ Erreur lors de la création: ${error.message}`));
       console.log(chalk.white('\n📋 Créez l\'issue manuellement:'));
