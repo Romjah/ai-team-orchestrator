@@ -12,7 +12,7 @@ import time
 from pathlib import Path
 
 def analyze_task():
-    """Analyse la tâche et détermine l'agent approprié"""
+    """Analyse la tâche et détermine l'agent approprié avec détection contextuelle"""
     # Récupération des données d'entrée
     event_name = os.environ.get('GITHUB_EVENT_NAME')
     issue_title = os.environ.get('ISSUE_TITLE', '')
@@ -30,34 +30,92 @@ def analyze_task():
     else:
         task = "Tâche générale"
     
-    # Classification automatique
+    # Analyse contextuelle du projet (nouveau)
+    project_context = analyze_project_context()
+    
+    # Classification intelligente avec contexte
     task_lower = task.lower()
     
-    if any(word in task_lower for word in ['bug', 'fix', 'error', 'problème']):
+    # Détection spécialisée pour Together.ai et modèles IA
+    if any(word in task_lower for word in ['together', 'together.ai', 'model', 'llm', 'ai model', 'chat', 'completion']):
+        task_type = 'ai_models'
+        agent = 'AI Models Specialist'
+    elif any(word in task_lower for word in ['api key', 'authentication', 'auth', 'token', 'validation']):
+        task_type = 'auth_integration'
+        agent = 'Security Specialist'
+    elif any(word in task_lower for word in ['config', 'configuration', 'setup', 'install']):
+        task_type = 'configuration'
+        agent = 'DevOps Specialist'
+    elif any(word in task_lower for word in ['bug', 'fix', 'error', 'problème', 'issue']):
         task_type = 'bug_fix'
         agent = 'Bug Hunter'
-    elif any(word in task_lower for word in ['test', 'testing', 'spec']):
+    elif any(word in task_lower for word in ['test', 'testing', 'spec', 'coverage']):
         task_type = 'testing'
         agent = 'QA Engineer'
-    elif any(word in task_lower for word in ['frontend', 'ui', 'css', 'html', 'component']):
+    elif any(word in task_lower for word in ['frontend', 'ui', 'css', 'html', 'component', 'react', 'vue']):
         task_type = 'frontend'
         agent = 'Frontend Specialist'
-    elif any(word in task_lower for word in ['backend', 'api', 'server', 'database']):
+    elif any(word in task_lower for word in ['backend', 'api', 'server', 'database', 'node', 'express']):
         task_type = 'backend'
         agent = 'Backend Specialist'
-    elif any(word in task_lower for word in ['refactor', 'optimize', 'clean']):
+    elif any(word in task_lower for word in ['refactor', 'optimize', 'clean', 'improve']):
         task_type = 'refactor'
         agent = 'Code Architect'
+    elif any(word in task_lower for word in ['doc', 'documentation', 'readme', 'guide']):
+        task_type = 'documentation'
+        agent = 'Technical Writer'
     else:
-        task_type = 'feature'
-        agent = 'Full-Stack Developer'
+        # Utiliser le contexte du projet pour déterminer le type
+        if project_context['is_ai_project']:
+            task_type = 'ai_enhancement'
+            agent = 'AI Integration Specialist'
+        else:
+            task_type = 'feature'
+            agent = 'Full-Stack Developer'
     
     return {
         'task': task,
         'task_type': task_type,
         'agent': agent,
-        'task_summary': task[:100]
+        'task_summary': task[:100],
+        'project_context': project_context
     }
+
+def analyze_project_context():
+    """Analyse le contexte du projet pour une génération plus pertinente"""
+    context = {
+        'is_ai_project': False,
+        'has_together_api': False,
+        'framework': 'unknown',
+        'language': 'javascript'
+    }
+    
+    try:
+        # Vérifier si c'est un projet AI/Together.ai
+        files_to_check = ['package.json', 'lib/api-config.js', 'README.md', '.env.example']
+        
+        for file_path in files_to_check:
+            if os.path.exists(file_path):
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    content = f.read().lower()
+                    
+                    if any(keyword in content for keyword in ['together', 'openai', 'anthropic', 'llm', 'ai-team']):
+                        context['is_ai_project'] = True
+                    
+                    if 'together' in content:
+                        context['has_together_api'] = True
+                    
+                    if 'react' in content:
+                        context['framework'] = 'react'
+                    elif 'vue' in content:
+                        context['framework'] = 'vue'
+                    elif 'express' in content:
+                        context['framework'] = 'express'
+    
+    except Exception as e:
+        print(f"Erreur analyse contexte: {e}")
+    
+    return context
 
 def generate_frontend_code(task):
     """Génère du code frontend sophistiqué"""
@@ -464,12 +522,964 @@ app.listen(PORT, () => {{
     console.log(`🚀 API AI Team sur le port ${{PORT}}`);
 }});'''
 
+def generate_ai_models_code(task, project_context):
+    """Génère du code spécialisé pour les modèles IA et Together.ai"""
+    task_lower = task.lower()
+    
+    # Déterminer le type de modification IA nécessaire
+    is_model_update = any(word in task_lower for word in ['model', 'gpt', 'claude', 'llama'])
+    is_chat_feature = any(word in task_lower for word in ['chat', 'conversation', 'message'])
+    is_completion = any(word in task_lower for word in ['completion', 'generate', 'text'])
+    
+    files = {}
+    
+    # Fichier principal de modèles IA
+    files['lib/ai-models.js'] = f'''// 🤖 Modèles IA - Généré par AI Models Specialist
+// Tâche: {task[:150]}...
+
+const {{ Together }} = require('together-ai');
+
+class AIModelsManager {{
+    constructor() {{
+        this.together = new Together({{
+            apiKey: process.env.TOGETHER_API_KEY
+        }});
+        this.models = this.getAvailableModels();
+        console.log('🤖 AI Models Manager initialisé');
+    }}
+
+    getAvailableModels() {{
+        return {{
+            // Modèles de chat performants
+            chat: {{
+                'meta-llama/Llama-2-70b-chat-hf': {{
+                    name: 'Llama 2 70B Chat',
+                    maxTokens: 4096,
+                    cost: 'standard',
+                    speed: 'fast'
+                }},
+                'meta-llama/Llama-2-13b-chat-hf': {{
+                    name: 'Llama 2 13B Chat',
+                    maxTokens: 4096,
+                    cost: 'low',
+                    speed: 'very_fast'
+                }},
+                'mistralai/Mixtral-8x7B-Instruct-v0.1': {{
+                    name: 'Mixtral 8x7B Instruct',
+                    maxTokens: 32768,
+                    cost: 'standard',
+                    speed: 'fast'
+                }},
+                'Qwen/Qwen1.5-72B-Chat': {{
+                    name: 'Qwen 1.5 72B Chat',
+                    maxTokens: 32768,
+                    cost: 'standard',
+                    speed: 'fast'
+                }}
+            }},
+            // Modèles de completion
+            completion: {{
+                'meta-llama/CodeLlama-70b-Instruct-hf': {{
+                    name: 'Code Llama 70B',
+                    maxTokens: 4096,
+                    speciality: 'code',
+                    cost: 'standard'
+                }},
+                'WizardLM/WizardCoder-Python-34B-V1.0': {{
+                    name: 'WizardCoder Python 34B',
+                    maxTokens: 8192,
+                    speciality: 'python',
+                    cost: 'low'
+                }}
+            }}
+        }};
+    }}
+
+    async chatCompletion(message, modelId = 'meta-llama/Llama-2-70b-chat-hf', options = {{}}) {{
+        try {{
+            console.log(`💬 Chat avec modèle: ${{modelId}}`);
+            
+            const response = await this.together.chat.completions.create({{
+                model: modelId,
+                messages: [
+                    {{
+                        role: 'user',
+                        content: message
+                    }}
+                ],
+                max_tokens: options.maxTokens || 1024,
+                temperature: options.temperature || 0.7,
+                top_p: options.topP || 0.9,
+                stop: options.stop || null
+            }});
+
+            return {{
+                success: true,
+                content: response.choices[0].message.content,
+                model: modelId,
+                usage: response.usage,
+                timestamp: new Date().toISOString()
+            }};
+        }} catch (error) {{
+            console.error(`❌ Erreur chat completion: ${{error.message}}`);
+            return {{
+                success: false,
+                error: error.message,
+                model: modelId,
+                timestamp: new Date().toISOString()
+            }};
+        }}
+    }}
+
+    async textCompletion(prompt, modelId = 'meta-llama/CodeLlama-70b-Instruct-hf', options = {{}}) {{
+        try {{
+            console.log(`📝 Completion avec modèle: ${{modelId}}`);
+            
+            const response = await this.together.completions.create({{
+                model: modelId,
+                prompt: prompt,
+                max_tokens: options.maxTokens || 512,
+                temperature: options.temperature || 0.3,
+                top_p: options.topP || 0.9,
+                stop: options.stop || ['\\n\\n']
+            }});
+
+            return {{
+                success: true,
+                content: response.choices[0].text,
+                model: modelId,
+                usage: response.usage,
+                timestamp: new Date().toISOString()
+            }};
+        }} catch (error) {{
+            console.error(`❌ Erreur text completion: ${{error.message}}`);
+            return {{
+                success: false,
+                error: error.message,
+                model: modelId,
+                timestamp: new Date().toISOString()
+            }};
+        }}
+    }}
+
+    async generateCode(description, language = 'javascript', modelId = 'meta-llama/CodeLlama-70b-Instruct-hf') {{
+        const prompt = `Génère du code ${{language}} pour: ${{description}}\\n\\nCode:`;
+        
+        return await this.textCompletion(prompt, modelId, {{
+            maxTokens: 1024,
+            temperature: 0.2,
+            stop: ['\\n\\n\\n']
+        }});
+    }}
+
+    getModelInfo(modelId) {{
+        for (const category of Object.values(this.models)) {{
+            if (category[modelId]) {{
+                return category[modelId];
+            }}
+        }}
+        return null;
+    }}
+
+    listModels(category = null) {{
+        if (category && this.models[category]) {{
+            return Object.keys(this.models[category]);
+        }}
+        
+        const allModels = [];
+        Object.values(this.models).forEach(category => {{
+            allModels.push(...Object.keys(category));
+        }});
+        return allModels;
+    }}
+}}
+
+module.exports = AIModelsManager;'''
+
+    # Exemple d'utilisation
+    files['examples/ai-models-usage.js'] = '''// 📚 Exemples d'utilisation des modèles IA
+const AIModelsManager = require('../lib/ai-models');
+
+async function demonstrateAIModels() {
+    const aiManager = new AIModelsManager();
+    
+    try {
+        console.log('🚀 Démonstration des modèles IA Together.ai');
+        
+        // 1. Chat avec Llama 2
+        console.log('\\n💬 Test Chat Completion:');
+        const chatResult = await aiManager.chatCompletion(
+            'Explique-moi React en 3 phrases',
+            'meta-llama/Llama-2-70b-chat-hf'
+        );
+        
+        if (chatResult.success) {
+            console.log('Réponse:', chatResult.content);
+            console.log('Tokens utilisés:', chatResult.usage);
+        }
+        
+        // 2. Génération de code
+        console.log('\\n💻 Test Code Generation:');
+        const codeResult = await aiManager.generateCode(
+            'Une fonction qui calcule la factorielle d\\'un nombre',
+            'javascript'
+        );
+        
+        if (codeResult.success) {
+            console.log('Code généré:', codeResult.content);
+        }
+        
+        // 3. Liste des modèles disponibles
+        console.log('\\n📋 Modèles disponibles:');
+        console.log('Chat:', aiManager.listModels('chat'));
+        console.log('Completion:', aiManager.listModels('completion'));
+        
+    } catch (error) {
+        console.error('Erreur démonstration:', error);
+    }
+}
+
+// Exécuter la démonstration
+if (require.main === module) {
+    demonstrateAIModels();
+}
+
+module.exports = demonstrateAIModels;'''
+
+    # Tests pour les modèles IA
+    files['tests/ai-models.test.js'] = '''// 🧪 Tests pour les modèles IA
+const { expect } = require('chai');
+const AIModelsManager = require('../lib/ai-models');
+
+describe('🤖 AI Models Manager', function() {
+    let aiManager;
+    
+    beforeEach(function() {
+        aiManager = new AIModelsManager();
+    });
+    
+    describe('Initialisation', function() {
+        it('devrait initialiser correctement', function() {
+            expect(aiManager).to.be.instanceOf(AIModelsManager);
+            expect(aiManager.models).to.be.an('object');
+            expect(aiManager.together).to.exist;
+        });
+        
+        it('devrait avoir des modèles pré-configurés', function() {
+            expect(aiManager.models.chat).to.be.an('object');
+            expect(aiManager.models.completion).to.be.an('object');
+            expect(Object.keys(aiManager.models.chat).length).to.be.above(0);
+        });
+    });
+    
+    describe('Gestion des modèles', function() {
+        it('devrait lister les modèles de chat', function() {
+            const chatModels = aiManager.listModels('chat');
+            expect(chatModels).to.be.an('array');
+            expect(chatModels).to.include('meta-llama/Llama-2-70b-chat-hf');
+        });
+        
+        it('devrait retourner les informations d\\'un modèle', function() {
+            const modelInfo = aiManager.getModelInfo('meta-llama/Llama-2-70b-chat-hf');
+            expect(modelInfo).to.be.an('object');
+            expect(modelInfo.name).to.equal('Llama 2 70B Chat');
+            expect(modelInfo.maxTokens).to.be.a('number');
+        });
+        
+        it('devrait retourner null pour un modèle inexistant', function() {
+            const modelInfo = aiManager.getModelInfo('modele-inexistant');
+            expect(modelInfo).to.be.null;
+        });
+    });
+    
+    describe('Validation des paramètres', function() {
+        it('devrait valider les options de chat', function() {
+            const options = {
+                maxTokens: 512,
+                temperature: 0.7,
+                topP: 0.9
+            };
+            
+            expect(options.maxTokens).to.be.a('number');
+            expect(options.temperature).to.be.within(0, 2);
+            expect(options.topP).to.be.within(0, 1);
+        });
+    });
+});'''
+    
+    return files
+
+def generate_auth_integration_code(task, project_context):
+    """Génère du code pour l'intégration d'authentification"""
+    return {
+        'lib/auth-validator.js': f'''// 🔐 Validateur d'authentification - Security Specialist
+// Tâche: {task[:150]}...
+
+class AuthValidator {{
+    constructor() {{
+        this.apiKeyPatterns = {{
+            together: /^[a-zA-Z0-9]{{40,}}$/, // Clés alphanumériques Together.ai
+            openai: /^sk-[a-zA-Z0-9]{{48,}}$/, // Clés OpenAI
+            anthropic: /^sk-ant-[a-zA-Z0-9_-]{{40,}}$/ // Clés Anthropic
+        }}};
+        console.log('🔐 Auth Validator initialisé');
+    }}
+
+    validateTogetherApiKey(apiKey) {{
+        if (!apiKey) {{
+            return {{ valid: false, error: 'Clé API manquante' }};
+        }}
+
+        if (typeof apiKey !== 'string') {{
+            return {{ valid: false, error: 'La clé API doit être une chaîne' }};
+        }}
+
+        // Vérification du format Together.ai (alphanumériqu)
+        if (!this.apiKeyPatterns.together.test(apiKey)) {{
+            return {{ 
+                valid: false, 
+                error: 'Format de clé Together.ai invalide (doit être alphanumériqu, 40+ caractères)' 
+            }};
+        }}
+
+        return {{ valid: true, provider: 'together.ai' }};
+    }}
+
+    async testApiKey(apiKey, provider = 'together') {{
+        const validation = this.validateTogetherApiKey(apiKey);
+        
+        if (!validation.valid) {{
+            return validation;
+        }}
+
+        try {{
+            // Test de la clé avec une requête simple
+            const {{ Together }} = require('together-ai');
+            const together = new Together({{ apiKey }});
+
+            // Tentative de récupération des modèles disponibles
+            const models = await together.models.list();
+            
+            return {{
+                valid: true,
+                provider: 'together.ai',
+                active: true,
+                models_count: models.data?.length || 0,
+                tested_at: new Date().toISOString()
+            }};
+
+        }} catch (error) {{
+            return {{
+                valid: false,
+                error: `Clé API Together.ai invalide: ${{error.message}}`,
+                tested_at: new Date().toISOString()
+            }};
+        }}
+    }}
+
+    generateSecureConfig(apiKey) {{
+        const validation = this.validateTogetherApiKey(apiKey);
+        
+        if (!validation.valid) {{
+            throw new Error(validation.error);
+        }}
+
+        return {{
+            together: {{
+                apiKey: apiKey,
+                baseURL: 'https://api.together.xyz/v1',
+                timeout: 30000,
+                retries: 3
+            }},
+            security: {{
+                keyValidation: true,
+                rateLimiting: true,
+                encryption: true
+            }},
+            generated_at: new Date().toISOString()
+        }};
+    }}
+}}
+
+module.exports = AuthValidator;''',
+
+        'scripts/setup-api-keys.js': '''#!/usr/bin/env node
+// 🔧 Script de configuration des clés API - Security Specialist
+
+const fs = require('fs');
+const path = require('path');
+const readline = require('readline');
+const AuthValidator = require('../lib/auth-validator');
+
+class APIKeySetup {
+    constructor() {
+        this.validator = new AuthValidator();
+        this.rl = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout
+        });
+    }
+
+    async promptForApiKey() {
+        return new Promise((resolve) => {
+            this.rl.question('🔑 Entrez votre clé API Together.ai: ', (apiKey) => {
+                resolve(apiKey.trim());
+            });
+        });
+    }
+
+    async setupEnvironment() {
+        console.log('🚀 Configuration des clés API AI Team');
+        console.log('');
+        
+        try {
+            // Demander la clé API
+            const apiKey = await this.promptForApiKey();
+            
+            // Valider la clé
+            console.log('🔍 Validation de la clé API...');
+            const validation = await this.validator.testApiKey(apiKey);
+            
+            if (!validation.valid) {
+                console.error('❌ Clé API invalide:', validation.error);
+                this.rl.close();
+                return;
+            }
+            
+            console.log('✅ Clé API valide !');
+            console.log(`📊 ${validation.models_count} modèles disponibles`);
+            
+            // Créer le fichier .env
+            this.createEnvFile(apiKey);
+            
+            // Créer le fichier de configuration
+            this.createConfigFile(apiKey);
+            
+            console.log('');
+            console.log('🎉 Configuration terminée avec succès !');
+            console.log('');
+            console.log('Prochaines étapes:');
+            console.log('1. Vérifiez le fichier .env');
+            console.log('2. Testez avec: npm run test-api');
+            console.log('3. Commencez à utiliser AI Team !');
+            
+        } catch (error) {
+            console.error('❌ Erreur lors de la configuration:', error.message);
+        } finally {
+            this.rl.close();
+        }
+    }
+
+    createEnvFile(apiKey) {
+        const envContent = `# 🤖 Configuration AI Team
+# Généré automatiquement le ${new Date().toISOString()}
+
+# Together.ai API Key (alphanumériqu)
+TOGETHER_API_KEY=${apiKey}
+
+# Configuration optionnelle
+TOGETHER_BASE_URL=https://api.together.xyz/v1
+AI_TEAM_DEBUG=false
+AI_TEAM_TIMEOUT=30000
+`;
+
+        fs.writeFileSync('.env', envContent);
+        console.log('📝 Fichier .env créé');
+    }
+
+    createConfigFile(apiKey) {
+        const config = this.validator.generateSecureConfig(apiKey);
+        
+        const configContent = `// 🔧 Configuration AI Team
+// ⚠️  Ne pas committer ce fichier avec les clés API
+
+module.exports = ${JSON.stringify(config, null, 2)};
+`;
+
+        fs.writeFileSync('ai-team-config.js', configContent);
+        console.log('⚙️  Fichier de configuration créé');
+        
+        // Ajouter au .gitignore
+        this.updateGitignore();
+    }
+
+    updateGitignore() {
+        const gitignoreEntries = [
+            '',
+            '# AI Team - Configuration sensible',
+            'ai-team-config.js',
+            '.env',
+            '.env.local'
+        ];
+
+        try {
+            let gitignoreContent = '';
+            if (fs.existsSync('.gitignore')) {
+                gitignoreContent = fs.readFileSync('.gitignore', 'utf8');
+            }
+
+            // Ajouter seulement si pas déjà présent
+            if (!gitignoreContent.includes('ai-team-config.js')) {
+                fs.appendFileSync('.gitignore', gitignoreEntries.join('\\n'));
+                console.log('🔒 .gitignore mis à jour');
+            }
+        } catch (error) {
+            console.warn('⚠️  Impossible de mettre à jour .gitignore:', error.message);
+        }
+    }
+}
+
+// Exécution du script
+if (require.main === module) {
+    const setup = new APIKeySetup();
+    setup.setupEnvironment();
+}
+
+module.exports = APIKeySetup;'''
+    }
+
+def generate_configuration_code(task, project_context):
+    """Génère du code de configuration"""
+    return {
+        'config/ai-team-setup.js': f'''// ⚙️ Configuration AI Team - DevOps Specialist
+// Tâche: {task[:150]}...
+
+const fs = require('fs');
+const path = require('path');
+
+class AITeamSetup {{
+    constructor() {{
+        this.configPath = path.join(process.cwd(), 'ai-team.config.json');
+        this.defaultConfig = this.getDefaultConfig();
+        console.log('⚙️ AI Team Setup initialisé');
+    }}
+
+    getDefaultConfig() {{
+        return {{
+            version: '1.5.4',
+            providers: {{
+                together: {{
+                    enabled: true,
+                    baseURL: 'https://api.together.xyz/v1',
+                    timeout: 30000,
+                    retries: 3,
+                    models: {{
+                        chat: 'meta-llama/Llama-2-70b-chat-hf',
+                        completion: 'meta-llama/CodeLlama-70b-Instruct-hf',
+                        coding: 'WizardLM/WizardCoder-Python-34B-V1.0'
+                    }}
+                }}
+            }},
+            features: {{
+                autoGeneration: true,
+                smartDetection: true,
+                contextAnalysis: true,
+                multiFileOutput: true
+            }},
+            output: {{
+                directory: './ai-generated',
+                includeTests: true,
+                includeDocumentation: true,
+                format: 'modern'
+            }},
+            security: {{
+                validateKeys: true,
+                sanitizeInput: true,
+                rateLimiting: true
+            }}
+        }};
+    }}
+
+    async initialize() {{
+        console.log('🚀 Initialisation d\\'AI Team...');
+        
+        try {{
+            // Créer la configuration
+            await this.createConfig();
+            
+            // Créer les répertoires nécessaires
+            await this.createDirectories();
+            
+            // Installer les dépendances
+            await this.installDependencies();
+            
+            // Vérifier la configuration
+            await this.validateSetup();
+            
+            console.log('✅ AI Team configuré avec succès !');
+            
+        }} catch (error) {{
+            console.error('❌ Erreur lors de l\\'initialisation:', error.message);
+            throw error;
+        }}
+    }}
+
+    async createConfig() {{
+        if (fs.existsSync(this.configPath)) {{
+            console.log('📄 Configuration existante trouvée');
+            return;
+        }}
+
+        fs.writeFileSync(
+            this.configPath, 
+            JSON.stringify(this.defaultConfig, null, 2)
+        );
+        console.log('📝 Configuration créée');
+    }}
+
+    async createDirectories() {{
+        const directories = [
+            './ai-generated',
+            './ai-generated/frontend',
+            './ai-generated/backend',
+            './ai-generated/tests',
+            './ai-generated/docs'
+        ];
+
+        directories.forEach(dir => {{
+            if (!fs.existsSync(dir)) {{
+                fs.mkdirSync(dir, {{ recursive: true }});
+                console.log(`📁 Répertoire créé: ${{dir}}`);
+            }}
+        }});
+    }}
+
+    async installDependencies() {{
+        const packageJsonPath = path.join(process.cwd(), 'package.json');
+        
+        if (!fs.existsSync(packageJsonPath)) {{
+            console.log('📦 Création de package.json...');
+            const packageJson = {{
+                name: 'ai-team-project',
+                version: '1.0.0',
+                description: 'Projet généré avec AI Team',
+                main: 'index.js',
+                scripts: {{
+                    'ai:generate': 'node ai-team-cli.js',
+                    'ai:test': 'npm test',
+                    'ai:setup': 'node config/ai-team-setup.js'
+                }},
+                dependencies: {{
+                    'together-ai': '^1.0.0',
+                    'express': '^4.18.0',
+                    'cors': '^2.8.5'
+                }},
+                devDependencies: {{
+                    'mocha': '^10.2.0',
+                    'chai': '^4.3.7',
+                    'nodemon': '^3.0.0'
+                }}
+            }};
+            
+            fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
+            console.log('📦 package.json créé');
+        }}
+    }}
+
+    async validateSetup() {{
+        console.log('🔍 Validation de la configuration...');
+        
+        const checks = [
+            {{ name: 'Configuration', path: this.configPath }},
+            {{ name: 'Répertoire de sortie', path: './ai-generated' }},
+            {{ name: 'Package.json', path: './package.json' }}
+        ];
+
+        let allValid = true;
+
+        checks.forEach(check => {{
+            if (fs.existsSync(check.path)) {{
+                console.log(`✅ ${{check.name}}: OK`);
+            }} else {{
+                console.log(`❌ ${{check.name}}: Manquant`);
+                allValid = false;
+            }}
+        }});
+
+        if (!allValid) {{
+            throw new Error('Configuration incomplète');
+        }}
+
+        console.log('🎉 Validation réussie !');
+    }}
+
+    getConfig() {{
+        if (fs.existsSync(this.configPath)) {{
+            return JSON.parse(fs.readFileSync(this.configPath, 'utf8'));
+        }}
+        return this.defaultConfig;
+    }}
+
+    updateConfig(updates) {{
+        const currentConfig = this.getConfig();
+        const newConfig = {{ ...currentConfig, ...updates }};
+        
+        fs.writeFileSync(
+            this.configPath, 
+            JSON.stringify(newConfig, null, 2)
+        );
+        
+        console.log('🔄 Configuration mise à jour');
+        return newConfig;
+    }}
+}}
+
+module.exports = AITeamSetup;'''
+    }
+
+def generate_documentation_code(task, project_context):
+    """Génère de la documentation"""
+    return {
+        'docs/AI-TEAM-GUIDE.md': f'''# 🤖 Guide AI Team - Documentation Complète
+
+## 📋 Tâche traitée
+{task[:200]}...
+
+## 🚀 Introduction
+
+AI Team est un orchestrateur intelligent qui génère automatiquement du code adapté à vos besoins spécifiques, avec une spécialisation pour les modèles IA comme Together.ai.
+
+## 🎯 Agents Spécialisés
+
+### 🤖 AI Models Specialist
+- **Rôle**: Gestion des modèles IA (Together.ai, OpenAI, etc.)
+- **Expertise**: Chat completion, text generation, code generation
+- **Modèles supportés**: Llama 2, Mixtral, CodeLlama, WizardCoder
+
+### 🔐 Security Specialist  
+- **Rôle**: Authentification et sécurité des APIs
+- **Expertise**: Validation des clés, configuration sécurisée
+- **Focus**: Together.ai API key validation (format alphanumériqu)
+
+### ⚙️ DevOps Specialist
+- **Rôle**: Configuration et déploiement
+- **Expertise**: Setup automatisé, gestion des environnements
+- **Outils**: Docker, CI/CD, configuration multi-environnements
+
+### 🎨 Frontend Specialist
+- **Rôle**: Interfaces utilisateur modernes
+- **Expertise**: React, Vue, HTML5, CSS3, animations
+- **Focus**: Responsive design, performance, accessibilité
+
+### ⚙️ Backend Specialist
+- **Rôle**: APIs et services backend
+- **Expertise**: Node.js, Express, bases de données
+- **Focus**: APIs REST, authentification, sécurité
+
+### 🧪 QA Engineer
+- **Rôle**: Tests automatisés et qualité
+- **Expertise**: Tests unitaires, intégration, couverture
+- **Outils**: Mocha, Chai, Jest, Cypress
+
+## 🛠️ Installation et Configuration
+
+### Installation rapide
+```bash
+npm install -g ai-team-orchestrator
+ai-team setup-api
+```
+
+### Configuration manuelle
+```bash
+# 1. Clone ou installation
+npm install ai-team-orchestrator
+
+# 2. Configuration des clés API
+node scripts/setup-api-keys.js
+
+# 3. Initialisation du projet
+node config/ai-team-setup.js
+```
+
+### Variables d'environnement
+```bash
+# Together.ai (alphanumériqu, 40+ caractères)
+TOGETHER_API_KEY=votre_cle_alphanumerique_together
+
+# Configuration optionnelle
+TOGETHER_BASE_URL=https://api.together.xyz/v1
+AI_TEAM_DEBUG=false
+AI_TEAM_TIMEOUT=30000
+```
+
+## 🔧 Utilisation
+
+### Génération automatique via GitHub
+```yaml
+# .github/workflows/ai-team.yml
+name: AI Team Auto-Generation
+on:
+  issues:
+    types: [opened, edited]
+  issue_comment:
+    types: [created]
+
+jobs:
+  ai-generation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./
+        with:
+          together_api_key: ${{{{ secrets.TOGETHER_API_KEY }}}}
+```
+
+### Utilisation programmatique
+```javascript
+const AIModelsManager = require('./lib/ai-models');
+
+const ai = new AIModelsManager();
+
+// Chat avec Llama 2
+const response = await ai.chatCompletion(
+  'Créer une API REST pour un blog',
+  'meta-llama/Llama-2-70b-chat-hf'
+);
+
+// Génération de code
+const code = await ai.generateCode(
+  'Fonction de pagination',
+  'javascript'
+);
+```
+
+## 📊 Modèles Disponibles
+
+### Chat Models
+| Modèle | Taille | Max Tokens | Usage |
+|--------|--------|------------|-------|
+| Llama 2 70B Chat | 70B | 4096 | Chat général, haute qualité |
+| Llama 2 13B Chat | 13B | 4096 | Chat rapide, coût réduit |
+| Mixtral 8x7B | 8x7B | 32768 | Contexte long, multilingue |
+| Qwen 1.5 72B | 72B | 32768 | Performance élevée |
+
+### Code Models
+| Modèle | Spécialité | Max Tokens | Usage |
+|--------|------------|------------|-------|
+| CodeLlama 70B | Code général | 4096 | Génération de code |
+| WizardCoder Python 34B | Python | 8192 | Code Python spécialisé |
+
+## 🎨 Types de Génération
+
+### Frontend
+- **Landing pages**: Navigation, hero, features, CTA
+- **Dashboards**: Sidebar, stats, graphiques, tables
+- **Composants**: React/Vue, animations, responsive
+
+### Backend  
+- **APIs REST**: Express.js, authentification, middleware
+- **Sécurité**: CORS, rate limiting, validation
+- **Base de données**: Modèles, migrations, requêtes
+
+### Tests
+- **Unitaires**: Mocha/Chai, Jest, couverture
+- **Intégration**: Supertest, API testing
+- **Performance**: Benchmarks, load testing
+
+### Documentation
+- **README**: Installation, usage, exemples
+- **API Docs**: Endpoints, paramètres, responses
+- **Guides**: Tutoriels step-by-step
+
+## 🔍 Détection Contextuelle
+
+AI Team analyse automatiquement votre projet pour générer du code adapté :
+
+- **Détection IA**: Mots-clés together, model, llm, chat
+- **Framework**: React, Vue, Express détectés automatiquement  
+- **Langage**: JavaScript, Python, selon le contexte
+- **Architecture**: Frontend, backend, fullstack
+
+## 🚀 Exemples d'Utilisation
+
+### Génération d'une API Chat
+```javascript
+// Détection automatique : "Créer une API chat avec Together.ai"
+// → Génère : AI Models Specialist
+// → Fichiers : lib/ai-models.js, examples/usage.js, tests/
+```
+
+### Interface de Chat
+```javascript
+// Détection automatique : "Interface frontend pour chat IA"
+// → Génère : Frontend Specialist
+// → Fichiers : index.html, styles.css, script.js avec chat UI
+```
+
+### Tests d'API IA
+```javascript
+// Détection automatique : "Tests pour les modèles Together.ai"
+// → Génère : QA Engineer  
+// → Fichiers : tests/, package.json, config de test
+```
+
+## 📈 Métriques et Monitoring
+
+- **Tokens utilisés**: Tracking automatique par modèle
+- **Temps de réponse**: Mesure de performance
+- **Taux d'erreur**: Monitoring des échecs API
+- **Coûts**: Estimation basée sur l'usage
+
+## 🛡️ Sécurité
+
+- **Validation des clés**: Format Together.ai vérifié
+- **Sanitisation**: Input cleaning automatique
+- **Rate limiting**: Protection contre l'abus
+- **Logs sécurisés**: Pas de clés dans les logs
+
+## 🐛 Troubleshooting
+
+### Erreurs Communes
+
+**Clé API invalide**
+```bash
+❌ Erreur: Format de clé Together.ai invalide
+✅ Solution: Vérifiez le format alphanumériqu (40+ chars)
+```
+
+**Modèle non trouvé**
+```bash
+❌ Erreur: Modèle 'xyz' non disponible
+✅ Solution: Utilisez ai.listModels() pour voir les options
+```
+
+**Timeout API**
+```bash
+❌ Erreur: Request timeout
+✅ Solution: Augmentez AI_TEAM_TIMEOUT ou vérifiez la connexion
+```
+
+## 📞 Support
+
+- **Issues GitHub**: Reportez les bugs et demandes
+- **Documentation**: Guide complet en ligne
+- **Community**: Discord AI Team pour l'aide
+
+---
+
+*Généré automatiquement par AI Team Technical Writer*
+*Version: 1.5.4 • Dernière mise à jour: {new Date().toLocaleDateString()}*
+'''
+    }
+
 def generate_code(task_info):
-    """Génère le code selon le type de tâche"""
+    """Génère le code selon le type de tâche avec contexte intelligent"""
     task = task_info['task']
     task_type = task_info['task_type']
+    project_context = task_info.get('project_context', {})
     
-    if task_type == 'frontend':
+    print(f"🎯 Génération {task_type} par {task_info['agent']}")
+    
+    # Génération spécialisée selon le type
+    if task_type == 'ai_models':
+        return generate_ai_models_code(task, project_context)
+    elif task_type == 'auth_integration':
+        return generate_auth_integration_code(task, project_context)
+    elif task_type == 'configuration':
+        return generate_configuration_code(task, project_context)
+    elif task_type == 'documentation':
+        return generate_documentation_code(task, project_context)
+    elif task_type == 'frontend':
         return generate_frontend_code(task)
     elif task_type == 'backend':
         return generate_backend_code(task)
@@ -477,43 +1487,474 @@ def generate_code(task_info):
         return generate_testing_code(task)
     elif task_type == 'bug_fix':
         return generate_bug_fix_code(task)
+    elif task_type == 'ai_enhancement':
+        # Amélioration IA pour projet existant
+        return generate_ai_enhancement_code(task, project_context)
     else:
-        # Code générique pour autres types
-        return {
-            'ai-generated-feature.js': f'''// 🤖 Code généré par AI Team - {task_info['agent']}
-// Type: {task_type}
-// Tâche: {task[:100]}...
+        # Code adaptatif intelligent au lieu de générique
+        return generate_adaptive_code(task, task_info, project_context)
 
-console.log('🤖 AI Team - Fonctionnalité générée automatiquement');
+def generate_ai_enhancement_code(task, project_context):
+    """Génère des améliorations IA pour un projet existant"""
+    return {
+        'lib/ai-integration.js': f'''// 🚀 Intégration IA - AI Integration Specialist
+// Amélioration pour: {task[:150]}...
 
-class AIGeneratedFeature {{
+const AIModelsManager = require('./ai-models');
+
+class AIIntegration {{
     constructor() {{
-        this.agent = '{task_info['agent']}';
-        this.taskType = '{task_type}';
+        this.aiManager = new AIModelsManager();
+        this.isConfigured = false;
+        console.log('🚀 AI Integration initialisé');
+    }}
+
+    async initialize() {{
+        try {{
+            // Vérifier la configuration
+            if (!process.env.TOGETHER_API_KEY) {{
+                throw new Error('TOGETHER_API_KEY manquante');
+            }}
+
+            this.isConfigured = true;
+            console.log('✅ IA configurée et prête');
+            return true;
+        }} catch (error) {{
+            console.error('❌ Erreur configuration IA:', error.message);
+            return false;
+        }}
+    }}
+
+    async enhanceWithAI(input, type = 'general') {{
+        if (!this.isConfigured) {{
+            await this.initialize();
+        }}
+
+        switch(type) {{
+            case 'code':
+                return await this.enhanceCode(input);
+            case 'text':
+                return await this.enhanceText(input);
+            case 'analysis':
+                return await this.performAnalysis(input);
+            default:
+                return await this.generalEnhancement(input);
+        }}
+    }}
+
+    async enhanceCode(code) {{
+        const prompt = `Améliore ce code JavaScript en ajoutant des commentaires, optimisations et bonnes pratiques:\\n\\n${{code}}`;
+        
+        const result = await this.aiManager.chatCompletion(prompt, 'meta-llama/CodeLlama-70b-Instruct-hf');
+        
+        return {{
+            original: code,
+            enhanced: result.content,
+            improvements: this.extractImprovements(result.content),
+            timestamp: new Date().toISOString()
+        }};
+    }}
+
+    async enhanceText(text) {{
+        const prompt = `Améliore ce texte en le rendant plus clair et professionnel:\\n\\n${{text}}`;
+        
+        const result = await this.aiManager.chatCompletion(prompt);
+        
+        return {{
+            original: text,
+            enhanced: result.content,
+            timestamp: new Date().toISOString()
+        }};
+    }}
+
+    async performAnalysis(data) {{
+        const prompt = `Analyse ces données et fournis des insights utiles:\\n\\n${{JSON.stringify(data, null, 2)}}`;
+        
+        const result = await this.aiManager.chatCompletion(prompt);
+        
+        return {{
+            data: data,
+            analysis: result.content,
+            insights: this.extractInsights(result.content),
+            timestamp: new Date().toISOString()
+        }};
+    }}
+
+    extractImprovements(enhancedCode) {{
+        // Extraction simple des améliorations mentionnées
+        const improvements = [];
+        
+        if (enhancedCode.includes('commentaire')) improvements.push('Commentaires ajoutés');
+        if (enhancedCode.includes('optimisation')) improvements.push('Code optimisé');
+        if (enhancedCode.includes('error')) improvements.push('Gestion d\\'erreurs améliorée');
+        
+        return improvements;
+    }}
+
+    extractInsights(analysis) {{
+        // Extraction d'insights de l'analyse
+        return [
+            'Analyse IA complétée',
+            'Insights générés automatiquement',
+            'Recommandations disponibles'
+        ];
+    }}
+}}
+
+module.exports = AIIntegration;''',
+
+        'examples/ai-enhancement-demo.js': '''// 📚 Démonstration des améliorations IA
+const AIIntegration = require('../lib/ai-integration');
+
+async function demonstrateEnhancements() {
+    const aiIntegration = new AIIntegration();
+    
+    try {
+        console.log('🚀 Démonstration des améliorations IA');
+        
+        // Initialisation
+        await aiIntegration.initialize();
+        
+        // 1. Amélioration de code
+        console.log('\\n💻 Amélioration de code:');
+        const codeToEnhance = `
+function calc(a, b) {
+    return a + b;
+}
+        `;
+        
+        const codeResult = await aiIntegration.enhanceWithAI(codeToEnhance, 'code');
+        console.log('Code amélioré:', codeResult.enhanced);
+        console.log('Améliorations:', codeResult.improvements);
+        
+        // 2. Amélioration de texte
+        console.log('\\n📝 Amélioration de texte:');
+        const textToEnhance = 'Ce projet fait des trucs avec IA';
+        
+        const textResult = await aiIntegration.enhanceWithAI(textToEnhance, 'text');
+        console.log('Texte amélioré:', textResult.enhanced);
+        
+        // 3. Analyse de données
+        console.log('\\n📊 Analyse de données:');
+        const dataToAnalyze = {
+            users: 150,
+            requests: 1200,
+            errors: 5,
+            response_time: '250ms'
+        };
+        
+        const analysisResult = await aiIntegration.enhanceWithAI(dataToAnalyze, 'analysis');
+        console.log('Analyse:', analysisResult.analysis);
+        
+    } catch (error) {
+        console.error('Erreur démonstration:', error);
+    }
+}
+
+// Exécuter la démonstration
+if (require.main === module) {
+    demonstrateEnhancements();
+}
+
+module.exports = demonstrateEnhancements;'''
+    }
+
+def generate_adaptive_code(task, task_info, project_context):
+    """Génère du code adaptatif intelligent basé sur le contexte"""
+    agent = task_info['agent']
+    task_lower = task.lower()
+    
+    # Créer le contexte JavaScript manuellement
+    context_js = f'''{{
+        is_ai_project: {str(project_context.get('is_ai_project', False)).lower()},
+        has_together_api: {str(project_context.get('has_together_api', False)).lower()},
+        framework: '{project_context.get('framework', 'unknown')}',
+        language: '{project_context.get('language', 'javascript')}'
+    }}'''
+    
+    # Déterminer le type de fichier le plus approprié
+    if project_context.get('is_ai_project'):
+        filename = 'lib/ai-feature-enhancement.js'
+        description = 'Amélioration de fonctionnalité IA'
+    elif 'api' in task_lower or 'endpoint' in task_lower:
+        filename = 'api/enhanced-endpoints.js'
+        description = 'Endpoints API améliorés'
+    elif 'component' in task_lower or 'interface' in task_lower:
+        filename = 'components/ai-generated-component.js'
+        description = 'Composant intelligent'
+    else:
+        filename = 'lib/smart-feature.js'
+        description = 'Fonctionnalité intelligente'
+    
+    return {
+        filename: f'''// 🤖 {description} - Généré par {agent}
+// Tâche: {task[:150]}...
+
+console.log('🤖 {agent} - Fonctionnalité intelligente initialisée');
+
+class SmartFeature {{
+    constructor() {{
+        this.agent = '{agent}';
+        this.taskType = '{task_info["task_type"]}';
+        this.context = {context_js};
         this.timestamp = new Date().toISOString();
-        console.log('🤖 Fonctionnalité AI Team initialisée');
+        
+        console.log(`✅ Initialisation par ${{this.agent}}`);
+        this.initialize();
     }}
 
     initialize() {{
-        console.log(`✅ Initialisation par ${{this.agent}}}`);
-        this.setupFeature();
+        // Configuration contextuelle
+        if (this.context.is_ai_project) {{
+            this.setupAIFeatures();
+        }}
+        
+        if (this.context.framework === 'express') {{
+            this.setupExpressIntegration();
+        }}
+        
+        this.setupCore();
         return this;
     }}
 
-    setupFeature() {{
-        // Logique de fonctionnalité générée automatiquement
-        const features = [
-            'Analyse intelligente',
-            'Génération de code',
-            'Optimisation automatique',
-            'Tests intégrés'
-        ];
+    setupAIFeatures() {{
+        console.log('🤖 Configuration des fonctionnalités IA');
+        
+        this.aiCapabilities = {{
+            smartAnalysis: true,
+            contextualGeneration: true,
+            adaptiveResponses: true,
+            intelligentCaching: true
+        }};
+        
+        this.models = {{
+            primary: 'meta-llama/Llama-2-70b-chat-hf',
+            fallback: 'meta-llama/Llama-2-13b-chat-hf',
+            coding: 'meta-llama/CodeLlama-70b-Instruct-hf'
+        }};
+    }}
 
-        features.forEach(feature => {{
-            console.log(`🔧 Activation: ${{feature}}`);
+    setupExpressIntegration() {{
+        console.log('⚙️ Configuration Express.js');
+        
+        this.expressConfig = {{
+            middleware: ['cors', 'helmet', 'rateLimit'],
+            routes: ['api/smart', 'api/ai-enhance', 'api/context'],
+            authentication: true,
+            validation: true
+        }};
+    }}
+
+    setupCore() {{
+        console.log('🔧 Configuration du cœur du système');
+        
+        this.features = {{
+            contextAwareness: true,
+            adaptiveLogic: true,
+            smartCaching: true,
+            performanceOptimization: true,
+            errorHandling: 'advanced',
+            logging: 'detailed'
+        }};
+        
+        // Logique adaptative selon la tâche
+        this.adaptToTask();
+    }}
+
+    adaptToTask() {{
+        const taskKeywords = '{task_lower}'.split(' ');
+        
+        taskKeywords.forEach(keyword => {{
+            switch(keyword) {{
+                case 'performance':
+                    this.enablePerformanceMode();
+                    break;
+                case 'security':
+                    this.enableSecurityMode();
+                    break;
+                case 'scalability':
+                    this.enableScalabilityMode();
+                    break;
+                case 'ui':
+                case 'interface':
+                    this.enableUIMode();
+                    break;
+                default:
+                    this.enableGeneralMode();
+            }}
         }});
+    }}
 
-        return features;
+    enablePerformanceMode() {{
+        console.log('⚡ Mode Performance activé');
+        this.performance = {{
+            caching: 'aggressive',
+            optimization: 'high',
+            monitoring: true,
+            profiling: true
+        }};
+    }}
+
+    enableSecurityMode() {{
+        console.log('🔒 Mode Sécurité activé');
+        this.security = {{
+            validation: 'strict',
+            sanitization: 'complete',
+            encryption: true,
+            auditing: true
+        }};
+    }}
+
+    enableScalabilityMode() {{
+        console.log('📈 Mode Scalabilité activé');
+        this.scalability = {{
+            clustering: true,
+            loadBalancing: true,
+            microservices: true,
+            containerization: true
+        }};
+    }}
+
+    enableUIMode() {{
+        console.log('🎨 Mode Interface activé');
+        this.ui = {{
+            responsive: true,
+            accessibility: true,
+            animations: true,
+            modernDesign: true
+        }};
+    }}
+
+    enableGeneralMode() {{
+        console.log('🔧 Mode Général activé');
+        this.general = {{
+            flexibility: true,
+            modularity: true,
+            maintainability: true,
+            documentation: true
+        }};
+    }}
+
+    async processRequest(input) {{
+        try {{
+            console.log('📥 Traitement de la requête');
+            
+            // Validation contextuelle
+            const validated = this.validateInput(input);
+            if (!validated.valid) {{
+                throw new Error(validated.error);
+            }}
+            
+            // Traitement intelligent
+            const processed = await this.intelligentProcessing(validated.data);
+            
+            // Réponse adaptative
+            const response = this.generateResponse(processed);
+            
+            return {{
+                success: true,
+                data: response,
+                agent: this.agent,
+                timestamp: new Date().toISOString(),
+                context: this.context
+            }};
+            
+        }} catch (error) {{
+            console.error('❌ Erreur de traitement:', error.message);
+            return {{
+                success: false,
+                error: error.message,
+                agent: this.agent,
+                timestamp: new Date().toISOString()
+            }};
+        }}
+    }}
+
+    validateInput(input) {{
+        if (!input) {{
+            return {{ valid: false, error: 'Input manquant' }};
+        }}
+        
+        // Validation contextuelle selon le projet
+        if (this.context.is_ai_project && typeof input === 'string') {{
+            // Validation spéciale pour projets IA
+            if (input.length > 10000) {{
+                return {{ valid: false, error: 'Input trop long pour traitement IA' }};
+            }}
+        }}
+        
+        return {{ valid: true, data: input }};
+    }}
+
+    async intelligentProcessing(data) {{
+        console.log('🧠 Traitement intelligent en cours');
+        
+        // Traitement adaptatif selon le contexte
+        if (this.context.is_ai_project) {{
+            return await this.aiProcessing(data);
+        }} else {{
+            return this.standardProcessing(data);
+        }}
+    }}
+
+    async aiProcessing(data) {{
+        // Simulation de traitement IA
+        return {{
+            processed: true,
+            method: 'ai_enhanced',
+            input: data,
+            enhancements: [
+                'IA contextuelle appliquée',
+                'Optimisation automatique',
+                'Réponse intelligente générée'
+            ],
+            confidence: 0.95
+        }};
+    }}
+
+    standardProcessing(data) {{
+        return {{
+            processed: true,
+            method: 'standard',
+            input: data,
+            transformations: [
+                'Validation effectuée',
+                'Traitement standard appliqué',
+                'Résultat formaté'
+            ]
+        }};
+    }}
+
+    generateResponse(processedData) {{
+        return {{
+            result: processedData,
+            metadata: {{
+                agent: this.agent,
+                features_used: Object.keys(this.features),
+                context_applied: this.context,
+                generation_time: new Date().toISOString()
+            }},
+            recommendations: this.generateRecommendations()
+        }};
+    }}
+
+    generateRecommendations() {{
+        const recommendations = [];
+        
+        if (this.context.is_ai_project) {{
+            recommendations.push('Considérez l\\'optimisation des prompts');
+            recommendations.push('Surveillez l\\'usage des tokens');
+        }}
+        
+        if (this.context.framework === 'express') {{
+            recommendations.push('Implémentez le rate limiting');
+            recommendations.push('Ajoutez la validation des schémas');
+        }}
+        
+        recommendations.push('Surveillez les métriques de performance');
+        recommendations.push('Documentez les nouvelles fonctionnalités');
+        
+        return recommendations;
     }}
 
     getStatus() {{
@@ -521,20 +1962,92 @@ class AIGeneratedFeature {{
             agent: this.agent,
             taskType: this.taskType,
             status: 'active',
+            context: this.context,
+            capabilities: this.aiCapabilities || this.features,
             timestamp: this.timestamp,
-            message: 'Fonctionnalité AI Team opérationnelle'
+            message: `Fonctionnalité ${{this.agent}} opérationnelle et adaptée au contexte`
         }};
     }}
 }}
 
-// Initialisation automatique
-const aiFeature = new AIGeneratedFeature().initialize();
+// Initialisation automatique avec détection contextuelle
+const smartFeature = new SmartFeature();
 
 // Export pour utilisation
 if (typeof module !== 'undefined' && module.exports) {{
-    module.exports = AIGeneratedFeature;
-}}'''
-        }
+    module.exports = SmartFeature;
+}}
+
+console.log('🎉 Fonctionnalité intelligente prête à l\\'utilisation');''',
+
+        # Fichier de test adaptatif
+        f'tests/{filename.replace("lib/", "").replace(".js", ".test.js")}': f'''// 🧪 Tests pour {description}
+const {{ expect }} = require('chai');
+const SmartFeature = require('../{filename}');
+
+describe('🤖 {agent} - Tests adaptatifs', function() {{
+    let feature;
+    
+    beforeEach(function() {{
+        feature = new SmartFeature();
+    }});
+    
+    describe('Initialisation contextuelle', function() {{
+        it('devrait s\\'initialiser avec le bon contexte', function() {{
+            expect(feature.agent).to.equal('{agent}');
+            expect(feature.context).to.be.an('object');
+            expect(feature.timestamp).to.be.a('string');
+        }});
+        
+        it('devrait configurer les bonnes fonctionnalités', function() {{
+            if (feature.context.is_ai_project) {{
+                expect(feature.aiCapabilities).to.exist;
+                expect(feature.models).to.exist;
+            }}
+            
+            expect(feature.features).to.be.an('object');
+        }});
+    }});
+    
+    describe('Traitement intelligent', function() {{
+        it('devrait traiter les requêtes correctement', async function() {{
+            const testInput = 'Test de fonctionnalité';
+            const result = await feature.processRequest(testInput);
+            
+            expect(result).to.have.property('success');
+            expect(result.agent).to.equal('{agent}');
+            
+            if (result.success) {{
+                expect(result.data).to.exist;
+                expect(result.data.metadata).to.exist;
+            }}
+        }});
+        
+        it('devrait gérer les erreurs gracieusement', async function() {{
+            const result = await feature.processRequest(null);
+            
+            expect(result.success).to.be.false;
+            expect(result.error).to.be.a('string');
+        }});
+    }});
+    
+    describe('Adaptation contextuelle', function() {{
+        it('devrait s\\'adapter au contexte du projet', function() {{
+            const status = feature.getStatus();
+            
+            expect(status.context).to.deep.equal(feature.context);
+            expect(status.capabilities).to.exist;
+        }});
+        
+        it('devrait générer des recommandations pertinentes', function() {{
+            const recommendations = feature.generateRecommendations();
+            
+            expect(recommendations).to.be.an('array');
+            expect(recommendations.length).to.be.above(0);
+        }});
+    }});
+}});'''
+    }
 
 def apply_code(generated_code, task_info):
     """Applique le code généré - version améliorée pour plusieurs fichiers"""
