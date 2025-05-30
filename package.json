@@ -1,47 +1,46 @@
 {
   "name": "ai-team-orchestrator",
-  "version": "2.4.0",
-  "description": "🚀 Création automatique d'issues GitHub avec DeepSeek R1 - Configuration claire : .env local + Secrets GitHub !",
-  "main": "index.js",
+  "version": "2.5.0",
+  "description": "🚀 Orchestrateur d'équipe IA avec templates performants - Création automatique d'issues GitHub avec DeepSeek R1",
   "type": "module",
-  "bin": {
-    "ai-team": "./bin/ai-team.js"
-  },
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node bin/ai-team.js",
-    "demo": "./demo/quick-demo.sh",
-    "help": "node bin/ai-team.js --help"
+    "lint": "eslint bin/ lib/",
+    "docs": "echo \"📚 Voir TEMPLATES_SYSTEM.md pour la documentation des templates\""
+  },
+  "bin": {
+    "ai-team": "bin/ai-team.js"
   },
   "keywords": [
     "ai",
     "github",
     "automation",
-    "together.ai",
     "deepseek",
-    "issues",
+    "templates",
+    "orchestrator",
+    "development",
     "code-generation",
-    "workflow",
-    "ultra-fast",
-    "simplified"
+    "intelligent-prompts"
   ],
-  "author": "Romain Jahier <romain.jahier.pro@gmail.com>",
+  "author": "AI Team Orchestrator Contributors",
   "license": "MIT",
   "dependencies": {
     "chalk": "^5.3.0",
     "commander": "^11.1.0",
     "inquirer": "^9.2.12",
-    "together-ai": "^0.16.0"
+    "together-ai": "^0.6.0"
   },
   "engines": {
     "node": ">=18.0.0"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Romjah/ai-team-orchestrator.git"
+    "url": "git+https://github.com/ai-team-orchestrator/ai-team-orchestrator.git"
   },
   "bugs": {
-    "url": "https://github.com/Romjah/ai-team-orchestrator/issues"
+    "url": "https://github.com/ai-team-orchestrator/ai-team-orchestrator/issues"
   },
-  "homepage": "https://github.com/Romjah/ai-team-orchestrator#readme"
+  "homepage": "https://github.com/ai-team-orchestrator/ai-team-orchestrator#readme"
 }

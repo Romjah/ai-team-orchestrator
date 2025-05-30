@@ -5,7 +5,9 @@ import chalk from 'chalk';
 import inquirer from 'inquirer';
 import Together from 'together-ai';
 import { APIKeyManager } from '../lib/api-config.js';
+import PromptTemplateManager from '../lib/prompt-templates.js';
 import fs from 'fs';
+import EnhancedTemplatesHelper from '../lib/enhanced-templates.js';
 
 // Charger le fichier .env automatiquement si disponible
 function loadEnvFile() {
@@ -50,7 +52,7 @@ class AITeamCLI {
     this.program
       .name('ai-team')
       .description('🚀 AI Team Orchestrator - Création automatique d\'issues avec DeepSeek R1')
-      .version('2.4.0')
+      .version('2.4.2')
       .option('-v, --verbose', 'Mode verbose')
       .option('--quick', 'Mode ultra-rapide (par défaut)');
   }
@@ -230,18 +232,24 @@ class AITeamCLI {
   }
 
   async generateDescriptionWithDeepSeek(title, type, apiKey) {
-    const prompt = `Génère une description détaillée pour cette tâche de développement:
-
-Titre: ${title}
-Type: ${type}
-
-Retourne une description structurée avec:
-- ## Objectif
-- ## Fonctionnalités attendues  
-- ## Critères d'acceptation
-- ## Technologies suggérées
-
-Sois précis et technique.`;
+    // Utilisation du nouveau système de templates performants
+    console.log(chalk.cyan('🧠 Génération avec templates performants DeepSeek R1...'));
+    
+    // Analyser le contexte du projet si possible
+    const additionalContext = await EnhancedTemplatesHelper.gatherProjectContext();
+    
+    // Générer le prompt optimisé selon le type de tâche
+    const promptManager = new PromptTemplateManager();
+    const optimizedPrompt = promptManager.generatePrompt(title, type, additionalContext);
+    
+    console.log(chalk.gray('📋 Template utilisé:'), chalk.yellow(type));
+    if (additionalContext.complexity) {
+      console.log(chalk.gray('🎯 Complexité détectée:'), chalk.blue(additionalContext.complexity));
+    }
+    if (additionalContext.technologies && additionalContext.technologies.length > 0) {
+      console.log(chalk.gray('🔧 Technologies détectées:'), 
+        chalk.green(additionalContext.technologies.map(t => t.techs.join(', ')).join(', ')));
+    }
 
     try {
       const client = new Together({ apiKey });
@@ -250,45 +258,340 @@ Sois précis et technique.`;
         model: "deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free",
         messages: [
           {
+            role: "system",
+            content: "Tu es un expert développeur senior avec une expertise en architecture logicielle, DevOps et bonnes pratiques. Génère des spécifications techniques détaillées, précises et immédiatement exploitables. Utilise un style professionnel avec des sections claires et des critères d'acceptation mesurables."
+          },
+          {
             role: "user",
-            content: prompt
+            content: optimizedPrompt
           }
         ],
-        max_tokens: 800,
+        max_tokens: 1200,
         temperature: 0.7
       });
 
-      return response.choices[0].message.content || this.getDefaultDescription(title, type);
+      const generatedContent = response.choices[0].message.content;
+      
+      // Ajouter des métadonnées sur le template utilisé
+      const enhancedDescription = `${generatedContent}
+
+---
+## 🤖 Métadonnées AI Team
+- **Template utilisé:** ${type}
+- **Complexité détectée:** ${additionalContext.complexity || 'medium'}
+- **Modèle IA:** DeepSeek R1 (DeepSeek-R1-Distill-Llama-70B-free)
+- **Version AI Team:** v2.5.0 avec templates performants
+
+*Généré par AI Team Orchestrator avec système de templates avancés*`;
+
+      return enhancedDescription;
       
     } catch (error) {
-      console.log(chalk.yellow('⚠️ Génération DeepSeek échouée, utilisation d\'un template par défaut'));
-      return this.getDefaultDescription(title, type);
+      console.log(chalk.yellow('⚠️ Génération DeepSeek échouée, utilisation d\'un template enrichi par défaut'));
+      return EnhancedTemplatesHelper.getEnhancedDefaultDescription(title, type, additionalContext);
     }
   }
 
-  getDefaultDescription(title, type) {
-    return `## Objectif
+  /**
+   * Collecte le contexte du projet pour enrichir les prompts
+   */
+  async gatherProjectContext() {
+    const context = {};
+    
+    try {
+      // Analyser package.json s'il existe
+      if (fs.existsSync('package.json')) {
+        const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+        context.projectName = packageJson.name;
+        context.dependencies = Object.keys(packageJson.dependencies || {});
+        context.devDependencies = Object.keys(packageJson.devDependencies || {});
+        context.scripts = Object.keys(packageJson.scripts || {});
+        
+        // Détecter le type de projet
+        if (context.dependencies.includes('react') || context.dependencies.includes('vue') || context.dependencies.includes('angular')) {
+          context.projectType = 'frontend';
+        } else if (context.dependencies.includes('express') || context.dependencies.includes('fastify') || context.dependencies.includes('koa')) {
+          context.projectType = 'backend';
+        }
+      }
+
+      // Analyser la structure des dossiers
+      const commonDirs = ['src', 'lib', 'components', 'pages', 'api', 'services', 'utils', 'tests', '__tests__'];
+      context.projectStructure = commonDirs.filter(dir => fs.existsSync(dir));
+
+      // Analyser les fichiers de configuration
+      const configFiles = ['.eslintrc', 'tsconfig.json', 'tailwind.config.js', 'next.config.js', 'vite.config.js', 'webpack.config.js'];
+      context.configFiles = configFiles.filter(file => 
+        fs.existsSync(file) || fs.existsSync(file + '.js') || fs.existsSync(file + '.json')
+      );
+
+      // Détecter TypeScript
+      if (fs.existsSync('tsconfig.json') || context.dependencies?.includes('typescript')) {
+        context.hasTypeScript = true;
+      }
+
+      // Détecter les frameworks de test
+      const testFrameworks = ['jest', 'vitest', 'mocha', 'cypress', 'playwright'];
+      context.testFrameworks = testFrameworks.filter(framework => 
+        context.dependencies?.includes(framework) || context.devDependencies?.includes(framework)
+      );
+
+    } catch (error) {
+      console.log(chalk.gray('📝 Contexte projet non détecté, utilisation des defaults'));
+    }
+
+    return context;
+  }
+
+  /**
+   * Description enrichie par défaut quand DeepSeek R1 n'est pas disponible
+   */
+  getEnhancedDefaultDescription(title, type, context) {
+    const techStack = this.generateTechStackSuggestions(type, context);
+    const complexity = context.complexity || 'medium';
+    
+    return `## 🎯 Objectif
 ${title}
 
-## Description
-Tâche de type ${type} à implémenter avec DeepSeek R1.
+## 📋 Description Technique
+Tâche de développement **${type}** avec une complexité estimée à **${complexity}**.
 
-## Fonctionnalités attendues
-- Implémentation selon les meilleures pratiques
-- Code moderne et maintenable
-- Documentation intégrée
+${this.getTypeSpecificSection(type)}
 
-## Critères d'acceptation
-- [ ] Implémentation fonctionnelle
-- [ ] Tests inclus
-- [ ] Documentation mise à jour
-- [ ] Performance optimisée
+## 🔧 Stack Technique Suggérée
+${techStack}
 
-## Technologies suggérées
-À définir selon le contexte du projet.
+## ⚡ Critères de Performance
+${this.getPerformanceCriteria(type)}
+
+## ✅ Critères d'Acceptation
+${this.getAcceptanceCriteria(type)}
+
+## 🧪 Tests Requis
+${this.getTestingRequirements(type)}
+
+## 📚 Documentation
+- Documentation technique complète
+- Commentaires de code explicatifs
+- Guide d'utilisation si applicable
+- Diagrammes d'architecture si nécessaire
 
 ---
-*Généré par AI Team Orchestrator v2.0 avec DeepSeek R1*`;
+## 🤖 Métadonnées AI Team
+- **Template utilisé:** ${type} (fallback enrichi)
+- **Complexité détectée:** ${complexity}
+- **Contexte projet:** ${context.projectType || 'détection automatique'}
+- **TypeScript:** ${context.hasTypeScript ? '✅ Détecté' : '❌ Non détecté'}
+- **Frameworks de test:** ${context.testFrameworks?.join(', ') || 'À définir'}
+
+*Généré par AI Team Orchestrator v2.5.0 avec système de templates avancés*`;
+  }
+
+  getTypeSpecificSection(type) {
+    const sections = {
+      frontend: `### 🎨 Spécifications Frontend
+- Interface utilisateur moderne et responsive
+- Composants réutilisables et maintenables
+- Gestion d'état appropriée (local/global)
+- Optimisations de performance (lazy loading, code splitting)
+- Accessibilité (WCAG 2.1)`,
+
+      backend: `### ⚙️ Spécifications Backend
+- Architecture REST ou GraphQL selon le besoin
+- Modélisation de données robuste
+- Authentification et autorisation sécurisées
+- Gestion d'erreurs et logging appropriés
+- Optimisations de performance (cache, queries)`,
+
+      testing: `### 🧪 Stratégie de Test
+- Tests unitaires avec haute couverture
+- Tests d'intégration pour les APIs
+- Tests end-to-end pour les parcours critiques
+- Tests de performance et de charge
+- Validation de sécurité`,
+
+      bug_fix: `### 🐛 Analyse et Correction
+- Investigation approfondie de la cause racine
+- Reproduction du bug en environnement de test
+- Correction minimale et sûre
+- Tests de régression pour éviter la récurrence
+- Documentation de la solution`,
+
+      refactor: `### 🏗️ Refactoring Structuré
+- Analyse du code existant et identification des améliorations
+- Refactoring incrémental avec validation continue
+- Amélioration de la lisibilité et de la maintenabilité
+- Réduction de la complexité cyclomatique
+- Préservation des fonctionnalités existantes`,
+
+      feature: `### 🚀 Nouvelle Fonctionnalité
+- Spécifications fonctionnelles détaillées
+- Conception technique adaptée à l'architecture existante
+- Implémentation par étapes avec validation
+- Tests complets de la fonctionnalité
+- Documentation utilisateur et technique`
+    };
+
+    return sections[type] || sections.feature;
+  }
+
+  generateTechStackSuggestions(type, context) {
+    const hasReact = context.dependencies?.includes('react');
+    const hasVue = context.dependencies?.includes('vue');
+    const hasNext = context.dependencies?.includes('next');
+    const hasExpress = context.dependencies?.includes('express');
+    const hasTypeScript = context.hasTypeScript;
+
+    const suggestions = {
+      frontend: `- **Framework:** ${hasReact ? 'React' : hasVue ? 'Vue.js' : hasNext ? 'Next.js' : 'React (recommandé)'}
+- **Styling:** ${context.dependencies?.includes('tailwindcss') ? 'Tailwind CSS' : 'CSS Modules / Styled Components'}
+- **State Management:** ${hasReact ? 'React Query + Zustand' : 'Pinia / Vuex'}
+- **Testing:** ${context.testFrameworks?.includes('jest') ? 'Jest + Testing Library' : 'Vitest + Testing Library'}
+- **Build:** ${hasNext ? 'Next.js' : 'Vite / Webpack'}`,
+
+      backend: `- **Runtime:** ${context.dependencies?.includes('express') ? 'Node.js + Express' : 'Node.js + Fastify'}
+- **Base de données:** PostgreSQL + Prisma ORM
+- **Authentification:** JWT + bcrypt
+- **Validation:** Zod / Joi
+- **Testing:** ${context.testFrameworks?.includes('jest') ? 'Jest + Supertest' : 'Vitest + Supertest'}`,
+
+      testing: `- **Unit Testing:** ${context.testFrameworks?.includes('jest') ? 'Jest' : 'Vitest'} + Testing Library
+- **E2E Testing:** ${context.testFrameworks?.includes('cypress') ? 'Cypress' : 'Playwright'}
+- **Performance:** K6 / Artillery
+- **Visual Testing:** Percy / Chromatic
+- **Coverage:** NYC / C8`,
+
+      bug_fix: `- **Debugging:** Chrome DevTools / Node.js Inspector
+- **Logging:** Winston / Pino
+- **Monitoring:** Sentry / DataDog
+- **Profiling:** Clinic.js / 0x
+- **Testing:** Framework existant + tests de régression`,
+
+      refactor: `- **Linting:** ESLint + Prettier
+- **Type Checking:** ${hasTypeScript ? 'TypeScript strict mode' : 'TypeScript (migration recommandée)'}
+- **Code Analysis:** SonarQube / CodeClimate
+- **Testing:** Maintien de la couverture existante
+- **Documentation:** JSDoc / TSDoc`
+    };
+
+    return suggestions[type] || suggestions.feature || `- Technologies adaptées au projet existant
+- TypeScript pour la robustesse${hasTypeScript ? ' (déjà configuré)' : ''}
+- Framework de test moderne
+- Outils de qualité de code (ESLint, Prettier)`;
+  }
+
+  getPerformanceCriteria(type) {
+    const criteria = {
+      frontend: `- First Contentful Paint (FCP) < 1.5s
+- Largest Contentful Paint (LCP) < 2.5s
+- Time to Interactive (TTI) < 3.5s
+- Cumulative Layout Shift (CLS) < 0.1
+- Bundle size optimisé avec code splitting`,
+
+      backend: `- Response time API < 100ms (95th percentile)
+- Throughput > 1000 req/sec
+- Memory usage stable (pas de leaks)
+- Database query time < 50ms
+- Error rate < 0.1%`,
+
+      testing: `- Test execution time < 5min (suite complète)
+- Tests unitaires < 10s
+- Tests E2E < 2min par parcours
+- Coverage report génération < 30s
+- Parallel execution optimisée`,
+
+      bug_fix: `- Correction sans dégradation performance
+- Temps de résolution < 24h pour bugs critiques
+- Impact minimal sur l'existant
+- Validation en staging avant production`,
+
+      refactor: `- Performance égale ou améliorée
+- Temps de build inchangé ou réduit
+- Memory footprint maintenu
+- Aucune régression fonctionnelle`
+    };
+
+    return criteria[type] || criteria.feature || `- Performance adaptée au type de tâche
+- Monitoring des métriques clés
+- Optimisation selon les besoins
+- Validation avant déploiement`;
+  }
+
+  getAcceptanceCriteria(type) {
+    const criteria = {
+      frontend: `- [ ] Interface responsive (mobile, tablet, desktop)
+- [ ] Accessibilité WCAG 2.1 AA validée
+- [ ] Cross-browser compatibility (Chrome, Firefox, Safari, Edge)
+- [ ] Performance Web Vitals dans les seuils
+- [ ] Tests E2E des parcours principaux`,
+
+      backend: `- [ ] API complètement documentée (OpenAPI/Swagger)
+- [ ] Authentification et autorisation implémentées
+- [ ] Validation des données d'entrée robuste
+- [ ] Gestion d'erreurs appropriée
+- [ ] Logs structurés et monitoring`,
+
+      testing: `- [ ] Couverture de code > 85%
+- [ ] Tests stables et fiables (pas de flaky tests)
+- [ ] Rapports de test détaillés et exploitables
+- [ ] Intégration CI/CD fonctionnelle
+- [ ] Documentation des scénarios de test`,
+
+      bug_fix: `- [ ] Bug reproduit et corrigé
+- [ ] Tests de régression ajoutés
+- [ ] Validation en environnement de staging
+- [ ] Aucune régression introduite
+- [ ] Post-mortem documenté si critique`,
+
+      refactor: `- [ ] Fonctionnalités existantes préservées
+- [ ] Tests existants passent toujours
+- [ ] Code plus lisible et maintenable
+- [ ] Complexité réduite (métriques améliorées)
+- [ ] Documentation technique mise à jour`
+    };
+
+    return criteria[type] || criteria.feature || `- [ ] Fonctionnalité implémentée selon les spécifications
+- [ ] Tests complets (unitaires, intégration, E2E)
+- [ ] Code review validé par l'équipe
+- [ ] Documentation technique et utilisateur
+- [ ] Déploiement validé en staging`;
+  }
+
+  getTestingRequirements(type) {
+    const requirements = {
+      frontend: `- Tests unitaires des composants React/Vue
+- Tests d'intégration des hooks et stores
+- Tests E2E des parcours utilisateur
+- Tests de régression visuelle
+- Tests d'accessibilité automatisés`,
+
+      backend: `- Tests unitaires des services et utilitaires
+- Tests d'intégration des APIs
+- Tests de base de données avec fixtures
+- Tests de sécurité (authentification, validation)
+- Tests de performance et de charge`,
+
+      testing: `- Stratégie de test complète définie
+- Suites de tests automatisées
+- Tests de performance intégrés
+- Monitoring de la qualité des tests
+- Formation équipe sur les outils`,
+
+      bug_fix: `- Tests reproduisant le bug avant correction
+- Tests de régression spécifiques
+- Validation manuelle du fix
+- Tests d'impact sur les fonctionnalités connexes`,
+
+      refactor: `- Conservation des tests existants
+- Tests additionnels pour le code refactorisé
+- Validation de non-régression complète
+- Tests de performance avant/après`
+    };
+
+    return requirements[type] || requirements.feature || `- Tests unitaires avec couverture > 80%
+- Tests d'intégration des points d'entrée
+- Tests E2E des fonctionnalités principales
+- Tests de régression automatisés`;
   }
 
   async createGitHubIssue(title, description, type, apiKey, labels = 'ai-team,enhancement') {
@@ -457,15 +760,15 @@ Tâche de type ${type} à implémenter avec DeepSeek R1.
       // Copier les scripts
       const templatesScriptsDir = path.join(templatesDir, '.github', 'scripts');
       if (fs.existsSync(templatesScriptsDir)) {
-        const scripts = fs.readdirSync(templatesScriptsDir);
+        const scripts = ['ai_team_mcp.py', 'requirements.txt'];
         
         console.log(chalk.yellow('🐍 Installation des scripts Python...'));
         
         for (const script of scripts) {
-          if (script.endsWith('.py') || script.endsWith('.txt')) {
-            const source = path.join(templatesScriptsDir, script);
-            const dest = path.join(scriptsDir, script);
-            
+          const source = path.join(templatesScriptsDir, script);
+          const dest = path.join(scriptsDir, script);
+          
+          if (fs.existsSync(source)) {
             fs.copyFileSync(source, dest);
             
             // Donner les permissions d'exécution aux scripts Python
@@ -478,6 +781,8 @@ Tâche de type ${type} à implémenter avec DeepSeek R1.
             }
             
             console.log(chalk.green(`  ✅ ${script}`));
+          } else {
+            console.log(chalk.yellow(`  ⚠️ ${script} non trouvé dans les templates`));
           }
         }
       }
@@ -540,7 +845,7 @@ Tâche de type ${type} à implémenter avec DeepSeek R1.
       const workflowsDir = '.github/workflows';
       
       if (fs.existsSync(workflowsDir)) {
-        const workflows = ['ai-team-mcp.yml', 'ai-team-orchestrator.yml', 'ai-team-zero-config.yml'];
+        const workflows = ['ai-team-mcp.yml'];
         let workflowsPresent = 0;
         
         workflows.forEach(workflow => {
@@ -570,7 +875,7 @@ Tâche de type ${type} à implémenter avec DeepSeek R1.
       const scriptsDir = '.github/scripts';
       
       if (fs.existsSync(scriptsDir)) {
-        const scripts = ['ai_team_mcp.py', 'requirements.txt', 'zero_config_generator.py'];
+        const scripts = ['ai_team_mcp.py', 'requirements.txt'];
         
         scripts.forEach(script => {
           const scriptPath = `${scriptsDir}/${script}`;

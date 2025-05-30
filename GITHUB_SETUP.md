@@ -153,13 +153,10 @@ ai-team check
 votre-projet/
 ├── .github/
 │   ├── workflows/
-│   │   ├── ai-team-mcp.yml          ✅ Principal DeepSeek R1
-│   │   ├── ai-team-orchestrator.yml ✅ Orchestrateur
-│   │   └── ai-team-zero-config.yml  ✅ Zero-config
+│   │   └── ai-team-mcp.yml          ✅ Principal DeepSeek R1
 │   └── scripts/
 │       ├── ai_team_mcp.py           ✅ Script DeepSeek R1
-│       ├── requirements.txt         ✅ Dépendances Python
-│       └── zero_config_generator.py ✅ Générateur
+│       └── requirements.txt         ✅ Dépendances Python
 └── .env (optionnel)
     ├── TOGETHER_AI_API_KEY=xxx
     └── GITHUB_TOKEN=xxx
