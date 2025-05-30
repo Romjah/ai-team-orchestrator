@@ -1,42 +1,24 @@
 #!/usr/bin/env node
 
 /**
- * AI Team Orchestrator
- * Zero-Config AI coding team for GitHub
+ * AI Team Orchestrator v2.0
+ * Propulsé par DeepSeek R1 - L'IA la plus avancée !
+ * Création automatique d'issues GitHub ultra-rapide
  */
 
-export { installAITeam, checkStatus, listAgents } from './lib/installer.js';
-export { createDemoIssue, listDemoTypes } from './lib/demo.js';
+export { APIKeyManager } from './lib/api-config.js';
 
 // Version info
-export const version = '1.1.0';
-export const name = '@ai-team/orchestrator';
+export const version = '2.0.0';
+export const name = 'ai-team-orchestrator';
 
-// Quick setup function
-export async function quickSetup(options = {}) {
-  const { installAITeam } = await import('./lib/installer.js');
-  
-  const config = {
-    type: options.type || 'zero-config',
-    force: options.force || false
-  };
-  
-  try {
-    await installAITeam(config.type, config.force);
-    return {
-      success: true,
-      message: 'AI Team installed successfully!'
-    };
-  } catch (error) {
-    return {
-      success: false,
-      error: error.message
-    };
-  }
-}
-
-// If called directly
+// Point d'entrée principal
 if (import.meta.url === `file://${process.argv[1]}`) {
-  console.log('🤖 AI Team Orchestrator');
-  console.log('Use "ai-team --help" for available commands');
+  console.log('🧠 AI Team Orchestrator v2.0 - Propulsé par DeepSeek R1');
+  console.log('Utilisez "ai-team --help" pour voir les commandes disponibles');
+  console.log('');
+  console.log('🚀 Commandes principales:');
+  console.log('  ai-team issue "titre" --type frontend');
+  console.log('  ai-team create "description"');
+  console.log('  ai-team setup-api');
 } 

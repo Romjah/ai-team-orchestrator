@@ -1,7 +1,7 @@
 {
   "name": "ai-team-orchestrator",
   "version": "2.0.0",
-  "description": "🚀 Création automatique d'issues GitHub avec Together.ai - Ultra-rapide ! Plus d'étapes complexes !",
+  "description": "🚀 Création automatique d'issues GitHub avec DeepSeek R1 - Ultra-rapide ! Plus d'étapes complexes !",
   "main": "index.js",
   "type": "module",
   "bin": {
@@ -9,8 +9,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js",
-    "setup": "node bin/install.js",
+    "start": "node bin/ai-team.js",
     "demo": "./demo/quick-demo.sh",
     "help": "node bin/ai-team.js --help"
   },
@@ -19,6 +18,7 @@
     "github",
     "automation",
     "together.ai",
+    "deepseek",
     "issues",
     "code-generation",
     "workflow",
@@ -30,7 +30,8 @@
   "dependencies": {
     "chalk": "^5.3.0",
     "commander": "^11.1.0",
-    "inquirer": "^9.2.12"
+    "inquirer": "^9.2.12",
+    "together-ai": "^0.16.0"
   },
   "engines": {
     "node": ">=18.0.0"

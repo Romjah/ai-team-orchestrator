@@ -3,8 +3,8 @@
 [![npm version](https://img.shields.io/npm/v/ai-team-orchestrator.svg)](https://www.npmjs.com/package/ai-team-orchestrator)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> **🚀 Création automatique d'issues GitHub avec Together.ai - Ultra-rapide !**  
-> Plus d'étapes complexes ! Créez des tâches et des issues instantanément.
+> **🧠 Création automatique d'issues GitHub avec DeepSeek R1 - L'IA la plus avancée !**  
+> Ultra-simplifié ! Plus d'étapes complexes !
 
 ## ⚡ Installation ultra-rapide
 
@@ -12,71 +12,69 @@
 # Installation globale
 npm install -g ai-team-orchestrator
 
-# Configuration instantanée (une seule fois)
+# Configuration instantanée (30 secondes)
 ai-team setup-api
 
 # Utilisation immédiate
-ai-team create "Créer une landing page moderne" --auto-issue
-```
-
-## 🔥 Nouveautés v2.0
-
-### ✅ **Fini les 5 étapes lourdes !**
-- ❌ Plus de vérifications multiples
-- ❌ Plus d'étapes interactives longues  
-- ❌ Plus de configurations complexes
-- ✅ **1 seule commande = résultat immédiat**
-
-### 🚀 **Création automatique d'issues**
-```bash
-# Création automatique d'issue GitHub
 ai-team issue "Landing page moderne" --type frontend
-
-# Génération automatique de description avec Together.ai
-ai-team issue "API REST pour e-commerce" --type backend
 ```
 
-### ⚡ **Mode ultra-rapide par défaut**
-Toutes les commandes sont maintenant optimisées pour la vitesse !
+## 🧠 **DeepSeek R1 - Révolution IA !**
 
-## 🎯 Utilisation simplifiée
+### ✅ **L'IA la plus intelligente disponible gratuitement**
+- 🔥 **DeepSeek R1** - Modèle de dernière génération
+- 🆓 **Gratuit** via Together.ai
+- ⚡ **Plus intelligent** que GPT-4 sur le code
+- 🚀 **Plus rapide** que tous les autres modèles
 
-### **Méthode 1: Création automatique d'issue**
+### 🎯 **Simplification maximale**
 ```bash
-# Création + issue GitHub automatique
-ai-team issue "Créer un tableau de bord" --type frontend --auto-issue
+# UNE SEULE commande = Issue GitHub créée automatiquement
+ai-team issue "Créer un blog moderne" --type frontend
 ```
 
-### **Méthode 2: Création rapide**
+## 🔥 Utilisation ultra-simplifiée
+
+### **Création automatique d'issues**
 ```bash
-# Mode rapide simplifié
-ai-team create "Page de contact avec formulaire" --type frontend
+# Frontend
+ai-team issue "Landing page avec animations" --type frontend
+
+# Backend  
+ai-team issue "API REST avec authentification" --type backend
+
+# Tests
+ai-team issue "Tests E2E complets" --type testing
+
+# Bug fixes
+ai-team issue "Fix memory leak images" --type bug_fix
 ```
 
-### **Méthode 3: Configuration express**
+### **Mode création rapide**
 ```bash
-# Configuration en 1 ligne
-export TOGETHER_AI_API_KEY="votre-cle"
-ai-team create "App mobile" --auto-issue
+# Description manuelle
+ai-team create "Dashboard analytics" --type frontend
+
+# Avec création automatique d'issue
+ai-team create "Microservice notifications" --auto-issue
 ```
 
-## 🔧 Commands ultra-rapides
+## 🔧 Commandes ultra-rapides
 
 | Commande | Action | Temps |
 |----------|--------|-------|
-| `ai-team issue "titre"` | Création automatique d'issue GitHub | **~5 sec** |
-| `ai-team create "description"` | Préparation rapide de tâche | **~3 sec** |
-| `ai-team install` | Installation AI Team | **~10 sec** |
-| `ai-team status` | Vérification rapide | **~2 sec** |
+| `ai-team issue "titre"` | Issue GitHub + Description IA | **5 sec** |
+| `ai-team create "desc"` | Préparation rapide | **3 sec** |
+| `ai-team setup-api` | Configuration complète | **30 sec** |
 
-## 🤖 Agents IA disponibles
+## 🤖 Agents IA intelligents
 
-Sélection automatique intelligente basée sur les mots-clés :
+Sélection automatique basée sur les mots-clés :
 
-- **`frontend`** → 🎨 UI/UX, CSS, animations
-- **`backend`** → ⚙️ APIs, serveurs, bases de données  
-- **`testing`** → 🧪 Tests automatisés
-- **`bug_fix`** → 🐛 Corrections et optimisations
+- **`frontend`** → 🎨 UI/UX, animations, responsive
+- **`backend`** → ⚙️ APIs, microservices, databases  
+- **`testing`** → 🧪 Tests automatisés, E2E, performance
+- **`bug_fix`** → 🐛 Debugging, optimisation, fixes
 - **`feature`** → 🚀 Nouvelles fonctionnalités
 
 ## ⚙️ Configuration express
@@ -84,90 +82,105 @@ Sélection automatique intelligente basée sur les mots-clés :
 ### Option 1: Assistant rapide (30 secondes)
 ```bash
 ai-team setup-api
-# L'assistant vous guide automatiquement
+# → Compte Together.ai gratuit
+# → Clé API automatique  
+# → DeepSeek R1 activé
 ```
 
 ### Option 2: Configuration manuelle (10 secondes)
 ```bash
-echo "TOGETHER_AI_API_KEY=votre-cle-api" > .env
+echo "TOGETHER_AI_API_KEY=votre-cle" > .env
 ```
 
-### Option 3: Variable d'environnement
+### Option 3: Variables d'environnement
 ```bash
 export TOGETHER_AI_API_KEY="votre-cle"
 export GITHUB_TOKEN="votre-token-github"
 ```
 
-## 🎯 Exemples d'utilisation
+## 🎯 Exemples avec DeepSeek R1
 
-### **Création d'une landing page**
+### **Projets web modernes**
 ```bash
-ai-team issue "Landing page moderne avec animations" --type frontend
+ai-team issue "SPA React avec TypeScript et tests" --type frontend
+ai-team issue "API GraphQL avec authentification" --type backend
 ```
 
-### **API REST complète**
+### **Applications mobiles**
 ```bash
-ai-team issue "API e-commerce avec authentification" --type backend
+ai-team issue "App React Native avec navigation" --type frontend
+ai-team issue "Backend mobile avec push notifications" --type backend
 ```
 
-### **Tests automatisés**
+### **Microservices**
 ```bash
-ai-team issue "Tests unitaires pour l'API user" --type testing
+ai-team issue "Microservice de notifications en temps réel" --type backend
+ai-team issue "Tests de charge pour microservices" --type testing
 ```
 
-### **Correction de bug**
-```bash
-ai-team issue "Fix memory leak dans le traitement des images" --type bug_fix
-```
-
-## 🚀 Workflow automatique
+## 🚀 Workflow automatique DeepSeek R1
 
 1. **Créez l'issue** → `ai-team issue "votre demande"`
-2. **GitHub Actions se déclenche** → Automatiquement
-3. **Together.ai analyse** → Génération intelligente 
-4. **Code généré** → Pull Request créée
-5. **Notification** → Vous recevez l'alerte
+2. **DeepSeek R1 analyse** → Compréhension intelligente
+3. **Description générée** → Précise et technique  
+4. **GitHub Actions déclenché** → Automatiquement
+5. **Code généré** → Qualité professionnelle
+6. **Pull Request créée** → Prête à review
 
-**Temps total: ~2-3 minutes** ⏱️
+**Temps total: ~2 minutes** ⏱️
 
-## 💡 Tips pour aller encore plus vite
+## 💡 Tips pour vitesse maximale
 
-### **Aliases bash utiles**
+### **Aliases bash magiques**
 ```bash
 # Ajoutez à votre .bashrc/.zshrc
 alias ait="ai-team issue"
-alias aic="ai-team create"
+alias aif="ai-team issue --type frontend"
+alias aib="ai-team issue --type backend"
+alias aitf="ai-team issue --type bug_fix"
 
-# Utilisez ensuite:
-ait "Blog avec CMS" --type frontend
+# Utilisation instantanée
+aif "Portfolio moderne"
+aib "API e-commerce"  
+aitf "Memory leak fix"
 ```
 
-### **Templates prêts à l'emploi**
+### **Templates pro avec DeepSeek R1**
 ```bash
-# Frontend
-ait "Dashboard analytics avec charts" --type frontend
+# Startup tech stack
+aif "Landing page SaaS avec pricing dynamique"
+aib "API SaaS avec billing Stripe et analytics"
 
-# Backend  
-ait "Microservice de notifications" --type backend
+# E-commerce complet  
+aif "Boutique avec panier temps réel et paiements"
+aib "Backend e-commerce avec inventory management"
 
-# Tests
-ait "E2E tests pour checkout" --type testing
+# Applications d'entreprise
+aif "Dashboard enterprise avec metrics temps réel"
+aib "Microservices avec monitoring et tracing"
 ```
 
-## 🔗 Intégrations express
+## 🧠 Pourquoi DeepSeek R1 ?
+
+- **🔥 Plus intelligent** - Surpasse GPT-4 sur le code
+- **⚡ Plus rapide** - Génération en quelques secondes
+- **🆓 Gratuit** - Via Together.ai (pas de limite stricte)
+- **🎯 Spécialisé** - Optimisé pour le développement
+- **🌟 Dernière génération** - Technologie 2024
+
+## 🔗 Intégrations zero-config
 
 - **GitHub** → Issues et PRs automatiques
-- **Together.ai** → IA gratuite (Llama + CodeLlama)
-- **GitHub Actions** → Workflows sans configuration
+- **Together.ai** → DeepSeek R1 gratuit
+- **GitHub Actions** → Workflows pré-configurés
 
 ## ❓ Support ultra-rapide
 
-- **Problème ?** → `ai-team doctor --fix`
-- **Status ?** → `ai-team status`
-- **Aide ?** → `ai-team --help`
+- **Aide** → `ai-team --help`
+- **Configuration** → `ai-team setup-api`
 
 ---
 
-**🎉 AI Team Orchestrator v2.0 - Plus simple, plus rapide, plus puissant !**
+**🧠 AI Team Orchestrator v2.0 - Propulsé par DeepSeek R1**
 
-*Terminé les configurations complexes, place à l'action immédiate !* ⚡ 
+*L'IA la plus avancée au service de votre productivité !* 🚀 
