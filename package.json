@@ -1,7 +1,7 @@
 {
   "name": "ai-team-orchestrator",
-  "version": "2.1.0",
-  "description": "🚀 Création automatique d'issues GitHub avec DeepSeek R1 - Ultra-rapide ! Plus d'étapes complexes !",
+  "version": "2.4.0",
+  "description": "🚀 Création automatique d'issues GitHub avec DeepSeek R1 - Configuration claire : .env local + Secrets GitHub !",
   "main": "index.js",
   "type": "module",
   "bin": {

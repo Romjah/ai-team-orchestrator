@@ -1,0 +1,39 @@
+name: AI Team Orchestrator
+on:
+  workflow_dispatch:
+    inputs:
+      task_description:
+        description: 'Describe what you want AI Team to build'
+        required: true
+        default: 'Create a modern component'
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  orchestrate:
+    runs-on: ubuntu-latest
+    name: 🤖 AI Team Orchestrator
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+          
+      - name: Run AI Team
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MANUAL_TASK: ${{ github.event.inputs.task_description }}
+          GITHUB_EVENT_NAME: 'workflow_dispatch'
+          ACTION: analyze
+        run: |
+          chmod +x .github/scripts/zero_config_generator.py
+          python3 .github/scripts/zero_config_generator.py 

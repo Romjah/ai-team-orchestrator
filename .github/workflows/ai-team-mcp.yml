@@ -47,24 +47,34 @@ jobs:
           ISSUE_TITLE: ${{ github.event.issue.title || github.event.inputs.task_description }}
           ISSUE_BODY: ${{ github.event.issue.body || 'Create modern code' }}
         run: |
+          # Charger le fichier .env s'il existe
+          if [ -f ".env" ]; then
+            echo "✅ Fichier .env détecté, chargement des variables..."
+            export $(grep -v '^#' .env | xargs)
+            echo "🔑 Variables d'environnement chargées depuis .env"
+          fi
+          
           # Vérifier que la clé API DeepSeek R1 est configurée
           if [ -z "$TOGETHER_AI_API_KEY" ]; then
-            echo "❌ ERREUR: Secret TOGETHER_AI_API_KEY non configuré!"
+            echo "❌ ERREUR: TOGETHER_AI_API_KEY non configuré!"
             echo ""
-            echo "📋 SOLUTION REQUISE:"
+            echo "📋 SOLUTIONS (au choix):"
+            echo ""
+            echo "🔧 Option 1: Fichier .env (RECOMMANDÉ)"
+            echo "Créez un fichier .env à la racine avec:"
+            echo "TOGETHER_AI_API_KEY=votre-cle-together-ai"
+            echo "GITHUB_TOKEN=votre-token-github # optionnel"
+            echo ""
+            echo "🔧 Option 2: Secrets GitHub"
             echo "1. Allez dans Settings → Secrets and variables → Actions"
             echo "2. Créez un nouveau secret repository"
             echo "3. Nom: TOGETHER_AI_API_KEY"
             echo "4. Valeur: votre-cle-together-ai"
-            echo "5. Relancez ce workflow"
             echo ""
-            echo "💡 Les workflows GitHub Actions utilisent les secrets GitHub"
-            echo "💡 Votre fichier .env local n'est pas accessible ici (sécurité)"
-            echo ""
-            echo "🔗 Configuration: https://github.com/${{ github.repository }}/settings/secrets/actions"
+            echo "💡 Le fichier .env est plus simple et plus rapide !"
             echo ""
             echo "changes_made=false" >> $GITHUB_OUTPUT
-            echo "error=Missing TOGETHER_AI_API_KEY secret" >> $GITHUB_OUTPUT
+            echo "error=Missing TOGETHER_AI_API_KEY" >> $GITHUB_OUTPUT
             exit 1
           fi
           

@@ -23,6 +23,21 @@ ai-team setup-api
 ai-team issue "Landing page moderne" --type frontend
 ```
 
+## 💡 **NOUVEAU : Configuration .env ultra-simple !**
+
+### ✅ **Plus besoin de secrets GitHub complexes !**
+- 📁 **Fichier .env local** → Configuration automatique
+- 🔧 **Zero secrets GitHub** → Tout se fait en local  
+- ⚡ **Setup en 30 secondes** → Plus de complexité
+- 🔒 **Sécurisé** → Clés en local dans .gitignore
+
+### 🚀 **Exemple de fichier .env créé automatiquement :**
+```bash
+# AI Team Orchestrator v2.3.0 - Configuration DeepSeek R1
+TOGETHER_AI_API_KEY=your-key-here
+GITHUB_TOKEN=ghp_your-token-here  # Optionnel
+```
+
 ## 🧠 **DeepSeek R1 - Révolution IA !**
 
 ### ✅ **L'IA la plus intelligente disponible gratuitement**
