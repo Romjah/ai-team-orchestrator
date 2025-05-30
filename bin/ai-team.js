@@ -26,6 +26,7 @@ class AITeamCLI {
     this.setupIssueCommand();
     this.setupCreateCommand();
     this.setupSetupCommand();
+    this.setupInitCommand();
   }
 
   setupIssueCommand() {
@@ -68,6 +69,20 @@ class AITeamCLI {
         try {
           const apiManager = new APIKeyManager();
           await apiManager.setupAPIKeyInteractively();
+        } catch (error) {
+          console.log(chalk.red(`❌ Erreur: ${error.message}`));
+          process.exit(1);
+        }
+      });
+  }
+
+  setupInitCommand() {
+    this.program
+      .command('init')
+      .description('🚀 Initialisation du projet avec les workflows GitHub et scripts')
+      .action(async () => {
+        try {
+          await this.handleInit();
         } catch (error) {
           console.log(chalk.red(`❌ Erreur: ${error.message}`));
           process.exit(1);
@@ -288,6 +303,119 @@ Tâche de type ${type} à implémenter avec DeepSeek R1.
     }
   }
 
+  async handleInit() {
+    console.log(chalk.cyan('🚀 Initialisation du projet AI Team Orchestrator'));
+    console.log(chalk.white('Installation des workflows GitHub et scripts DeepSeek R1...\n'));
+
+    try {
+      const fs = await import('fs');
+      const path = await import('path');
+      const { fileURLToPath } = await import('url');
+      const { execSync } = await import('child_process');
+
+      // Détecter si nous sommes dans un repo git
+      try {
+        execSync('git rev-parse --git-dir', { stdio: 'ignore' });
+      } catch (error) {
+        throw new Error('Ce dossier n\'est pas un repository Git. Initialisez d\'abord avec: git init');
+      }
+
+      // Trouver le dossier des templates dans le package npm
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = path.dirname(__filename);
+      const templatesDir = path.join(__dirname, '..', 'templates');
+      
+      console.log(chalk.yellow('📁 Vérification des templates...'));
+      
+      if (!fs.existsSync(templatesDir)) {
+        throw new Error('Dossier templates non trouvé. Réinstallez le package: npm install -g ai-team-orchestrator');
+      }
+
+      // Créer le dossier .github s'il n'existe pas
+      const githubDir = '.github';
+      const scriptsDir = path.join(githubDir, 'scripts');
+      const workflowsDir = path.join(githubDir, 'workflows');
+
+      console.log(chalk.yellow('📂 Création de la structure GitHub...'));
+      
+      if (!fs.existsSync(githubDir)) {
+        fs.mkdirSync(githubDir, { recursive: true });
+      }
+      if (!fs.existsSync(scriptsDir)) {
+        fs.mkdirSync(scriptsDir, { recursive: true });
+      }
+      if (!fs.existsSync(workflowsDir)) {
+        fs.mkdirSync(workflowsDir, { recursive: true });
+      }
+
+      // Copier les workflows
+      const templatesWorkflowsDir = path.join(templatesDir, '.github', 'workflows');
+      if (fs.existsSync(templatesWorkflowsDir)) {
+        const workflows = fs.readdirSync(templatesWorkflowsDir);
+        
+        console.log(chalk.yellow('🔧 Installation des workflows...'));
+        
+        for (const workflow of workflows) {
+          if (workflow.endsWith('.yml')) {
+            const source = path.join(templatesWorkflowsDir, workflow);
+            const dest = path.join(workflowsDir, workflow);
+            
+            fs.copyFileSync(source, dest);
+            console.log(chalk.green(`  ✅ ${workflow}`));
+          }
+        }
+      }
+
+      // Copier les scripts
+      const templatesScriptsDir = path.join(templatesDir, '.github', 'scripts');
+      if (fs.existsSync(templatesScriptsDir)) {
+        const scripts = fs.readdirSync(templatesScriptsDir);
+        
+        console.log(chalk.yellow('🐍 Installation des scripts Python...'));
+        
+        for (const script of scripts) {
+          if (script.endsWith('.py') || script.endsWith('.txt')) {
+            const source = path.join(templatesScriptsDir, script);
+            const dest = path.join(scriptsDir, script);
+            
+            fs.copyFileSync(source, dest);
+            
+            // Donner les permissions d'exécution aux scripts Python
+            if (script.endsWith('.py')) {
+              try {
+                execSync(`chmod +x "${dest}"`, { stdio: 'ignore' });
+              } catch (e) {
+                // Ignorer les erreurs de permissions sur Windows
+              }
+            }
+            
+            console.log(chalk.green(`  ✅ ${script}`));
+          }
+        }
+      }
+
+      console.log(chalk.green('\n🎉 Installation terminée avec succès !'));
+      console.log(chalk.cyan('\n📋 Prochaines étapes:'));
+      console.log(chalk.white('1. Configurez vos secrets GitHub:'));
+      console.log(chalk.gray('   • Repository Settings → Secrets and variables → Actions'));
+      console.log(chalk.gray('   • Créez: TOGETHER_AI_API_KEY (votre clé Together.ai)'));
+      console.log(chalk.gray('   • Créez: GITHUB_TOKEN (token GitHub avec permissions)'));
+      console.log();
+      console.log(chalk.white('2. Testez avec une issue:'));
+      console.log(chalk.blue('   ai-team issue "Landing page moderne" --type frontend'));
+      console.log();
+      console.log(chalk.white('3. Le workflow se déclenchera automatiquement !'));
+      console.log(chalk.gray('   • Analyse avec DeepSeek R1'));
+      console.log(chalk.gray('   • Génération de code'));
+      console.log(chalk.gray('   • Création de Pull Request'));
+      console.log();
+      console.log(chalk.cyan('🧠 Propulsé par DeepSeek R1 - L\'IA la plus avancée !'));
+
+    } catch (error) {
+      throw new Error(`Erreur lors de l'initialisation: ${error.message}`);
+    }
+  }
+
   run() {
     // Affichage par défaut si aucune commande
     if (!process.argv.slice(2).length) {
@@ -299,6 +427,7 @@ Tâche de type ${type} à implémenter avec DeepSeek R1.
       console.log(chalk.white('  ai-team issue "titre"'), chalk.gray('- Création automatique d\'issue'));
       console.log(chalk.white('  ai-team create "desc"'), chalk.gray('- Mode création rapide'));
       console.log(chalk.white('  ai-team setup-api'), chalk.gray('   - Configuration en 30s'));
+      console.log(chalk.white('  ai-team init'), chalk.gray('- Initialisation du projet'));
       console.log();
       
       console.log(chalk.green('🎯 Exemples instantanés:'));

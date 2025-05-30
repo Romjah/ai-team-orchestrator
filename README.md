@@ -12,7 +12,11 @@
 # Installation globale
 npm install -g ai-team-orchestrator
 
-# Configuration instantanée (30 secondes)
+# Initialisation du projet (NOUVEAU!)
+cd votre-projet-git
+ai-team init
+
+# Configuration API (30 secondes)
 ai-team setup-api
 
 # Utilisation immédiate
@@ -63,6 +67,7 @@ ai-team create "Microservice notifications" --auto-issue
 
 | Commande | Action | Temps |
 |----------|--------|-------|
+| `ai-team init` | Installation workflows GitHub | **10 sec** |
 | `ai-team issue "titre"` | Issue GitHub + Description IA | **5 sec** |
 | `ai-team create "desc"` | Préparation rapide | **3 sec** |
 | `ai-team setup-api` | Configuration complète | **30 sec** |
@@ -79,12 +84,17 @@ Sélection automatique basée sur les mots-clés :
 
 ## ⚙️ Configuration express
 
-### Option 1: Assistant rapide (30 secondes)
+### Option 1: Installation complète (40 secondes)
 ```bash
+# 1. Installation du package
+npm install -g ai-team-orchestrator
+
+# 2. Initialisation du projet Git
+cd votre-projet
+ai-team init  # ← NOUVEAU ! Installe les workflows GitHub
+
+# 3. Configuration API
 ai-team setup-api
-# → Compte Together.ai gratuit
-# → Clé API automatique  
-# → DeepSeek R1 activé
 ```
 
 ### Option 2: Configuration manuelle (10 secondes)

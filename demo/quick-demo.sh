@@ -15,6 +15,11 @@ echo ""
 echo "🚀 Commandes ultra-simplifiées :"
 echo ""
 
+echo "📋 0. Initialisation du projet (NOUVEAU!) :"
+echo "   cd votre-projet-git"
+echo "   ai-team init"
+echo ""
+
 echo "📋 1. Création automatique d'issue GitHub avec DeepSeek R1 :"
 echo "   ai-team issue \"Landing page moderne\" --type frontend"
 echo ""
