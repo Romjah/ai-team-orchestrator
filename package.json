@@ -1,44 +1,40 @@
 {
   "name": "ai-team-orchestrator",
-  "version": "1.5.4",
-  "description": "🤖 Zero-Config AI coding team for GitHub with intuitive Together.ai API setup",
+  "version": "2.0.0",
+  "description": "🚀 Création automatique d'issues GitHub avec Together.ai - Ultra-rapide ! Plus d'étapes complexes !",
   "main": "index.js",
   "type": "module",
   "bin": {
-    "ai-team": "bin/ai-team.js",
-    "ai-team-install": "bin/install.js"
+    "ai-team": "./bin/ai-team.js"
   },
   "scripts": {
-    "install-local": "node ./bin/install.js",
-    "test": "node test/test.js",
-    "test:auto": "./test/auto-test.sh",
-    "test:functional": "node test/functional-test.js",
-    "setup": "npm run install-local",
-    "demo": "node demo/demo.js"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "setup": "node bin/install.js",
+    "demo": "./demo/quick-demo.sh",
+    "help": "node bin/ai-team.js --help"
   },
-  "files": [
-    "bin/",
-    "templates/",
-    "lib/",
-    "README.md",
-    "LICENSE"
-  ],
   "keywords": [
     "ai",
     "github",
     "automation",
-    "coding",
-    "assistant",
-    "zero-config",
-    "github-actions",
-    "workflow"
+    "together.ai",
+    "issues",
+    "code-generation",
+    "workflow",
+    "ultra-fast",
+    "simplified"
   ],
-  "author": {
-    "name": "Romain Jahier",
-    "email": "romain.jahier.pro@gmail.com",
-    "url": "https://github.com/Romjah"
-  },
+  "author": "Romain Jahier <romain.jahier.pro@gmail.com>",
   "license": "MIT",
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^11.1.0",
+    "inquirer": "^9.2.12"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Romjah/ai-team-orchestrator.git"
@@ -46,20 +42,5 @@
   "bugs": {
     "url": "https://github.com/Romjah/ai-team-orchestrator/issues"
   },
-  "homepage": "https://github.com/Romjah/ai-team-orchestrator#readme",
-  "engines": {
-    "node": ">=14.0.0"
-  },
-  "dependencies": {
-    "chalk": "^5.3.0",
-    "inquirer": "^9.2.7",
-    "ora": "^7.0.1",
-    "commander": "^11.0.0"
-  },
-  "devDependencies": {
-    "eslint": "^8.44.0"
-  },
-  "peerDependencies": {
-    "git": "*"
-  }
+  "homepage": "https://github.com/Romjah/ai-team-orchestrator#readme"
 }
