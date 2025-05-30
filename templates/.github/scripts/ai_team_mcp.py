@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 🤖 AI Team Orchestrator avec Together.ai
-Utilise Together.ai pour la génération de code avec des modèles open source gratuits
+Utilise DeepSeek R1 pour la génération de code de haute qualité
 """
 
 import os
@@ -23,57 +23,48 @@ class AITeamMCP:
         self.together_url = "https://api.together.xyz/v1/chat/completions"
         
     def analyze_task(self) -> Dict:
-        """Analyse la tâche et détermine l'agent approprié avec Together.ai"""
+        """Analyse la tâche et détermine l'agent approprié avec DeepSeek R1"""
         issue_title = os.environ.get('ISSUE_TITLE', '')
         issue_body = os.environ.get('ISSUE_BODY', '')
         
         task = f"{issue_title}\n{issue_body}"
         task_lower = task.lower()
         
-        # Classification intelligente avec Together.ai
+        # Classification intelligente avec DeepSeek R1
         headers = {
             "Authorization": f"Bearer {self.together_api_key}",
             "Content-Type": "application/json"
         }
         
-        # Utiliser Together.ai pour classifier la tâche
-        classification_prompt = f"""Analyze this GitHub issue and classify it into the appropriate category.
+        classification_prompt = f"""Analyze this development task and classify it. Return ONLY a JSON object:
 
-Issue Title: {issue_title}
-Issue Description: {issue_body}
+Task: {task}
 
-Classify into one of these categories:
-- bug_fix: For bug fixes and error resolution
-- testing: For testing and QA tasks  
-- frontend: For UI, CSS, HTML, components, landing pages
-- backend: For APIs, servers, databases
-- refactor: For code optimization and refactoring
-- feature: For new features and general development
+Return format:
+{{
+    "task_type": "frontend|backend|testing|bug_fix|refactor|feature",
+    "agent": "agent name with emoji",
+    "task_summary": "brief summary in French",
+    "priority": "high|medium|low",
+    "technologies": ["tech1", "tech2"]
+}}
 
-Return ONLY a JSON object with these fields:
-{{"task_type": "category", "agent": "Agent Name 🤖", "task_summary": "brief summary"}}
+Choose the best task_type based on the content."""
 
-Agent names:
-- Bug Hunter 🐛 (for bug_fix)
-- QA Engineer 🧪 (for testing)
-- Frontend Specialist 🎨 (for frontend)
-- Backend Specialist ⚙️ (for backend)  
-- Code Architect 🏗️ (for refactor)
-- Full-Stack Developer 🚀 (for feature)"""
-        
         try:
             response = requests.post(
                 self.together_url,
                 headers=headers,
                 json={
-                    "model": "meta-llama/Llama-2-7b-chat-hf",
+                    "model": "deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free",
                     "messages": [
-                        {"role": "system", "content": "You are a task classifier. Return only valid JSON."},
+                        {"role": "system", "content": "You are an expert development task analyzer. Always return valid JSON."},
                         {"role": "user", "content": classification_prompt}
                     ],
-                    "max_tokens": 200,
-                    "temperature": 0.3
-                }
+                    "max_tokens": 300,
+                    "temperature": 0.1
+                },
+                timeout=30
             )
             response.raise_for_status()
             
@@ -81,28 +72,25 @@ Agent names:
             content = result_data['choices'][0]['message']['content']
             
             # Extraire le JSON de la réponse
-            try:
-                # Nettoyer la réponse et extraire le JSON
-                json_start = content.find('{')
-                json_end = content.rfind('}') + 1
-                if json_start >= 0 and json_end > json_start:
-                    json_content = content[json_start:json_end]
-                    result = json.loads(json_content)
-                    
-                    return {
-                        'task': task,
-                        'task_type': result['task_type'],
-                        'agent': result['agent'],
-                        'task_summary': result['task_summary']
-                    }
-            except (json.JSONDecodeError, KeyError) as e:
-                print(f"Error parsing Together.ai response: {e}")
+            import re
+            json_match = re.search(r'\{.*\}', content, re.DOTALL)
+            if json_match:
+                classification = json.loads(json_match.group())
+                return {
+                    'task': task,
+                    'task_type': classification.get('task_type', 'feature'),
+                    'agent': classification.get('agent', 'Full-Stack Developer 🚀'),
+                    'task_summary': classification.get('task_summary', task[:100].replace('\n', ' ')),
+                    'priority': classification.get('priority', 'medium'),
+                    'technologies': classification.get('technologies', [])
+                }
+            else:
                 # Fallback si le parsing JSON échoue
                 raise Exception("JSON parsing failed")
                 
         except Exception as e:
-            print(f"Together.ai classification failed: {e}, using fallback classification")
-            # Fallback à la classification basique si Together.ai échoue
+            print(f"DeepSeek R1 classification failed: {e}, using fallback classification")
+            # Fallback à la classification basique si DeepSeek R1 échoue
             if any(word in task_lower for word in ['bug', 'fix', 'error', 'problème', 'broken']):
                 task_type = 'bug_fix'
                 agent = 'Bug Hunter 🐛'
@@ -126,50 +114,95 @@ Agent names:
                 'task': task,
                 'task_type': task_type,
                 'agent': agent,
-                'task_summary': task[:100].replace('\n', ' ')
+                'task_summary': task[:100].replace('\n', ' '),
+                'priority': 'medium',
+                'technologies': []
             }
     
     def generate_code_with_ai(self, task_info: Dict) -> Dict[str, str]:
-        """Génère du code en utilisant Together.ai"""
+        """Génère du code en utilisant DeepSeek R1"""
         headers = {
             "Authorization": f"Bearer {self.together_api_key}",
             "Content-Type": "application/json"
         }
         
-        # Préparer le prompt pour Together.ai basé sur le type de tâche
+        # Préparer le prompt pour DeepSeek R1 basé sur le type de tâche
         if task_info['task_type'] == 'frontend':
-            prompt = f"""Create a modern, responsive HTML page for this task:
+            prompt = f"""Create a modern, professional frontend solution for this task:
+
 Task: {task_info['task']}
+Technologies: {', '.join(task_info.get('technologies', ['HTML', 'CSS', 'JavaScript']))}
 
-Generate a complete HTML file with:
-- Modern CSS styling with gradients and animations
-- Responsive design
-- Interactive elements
-- Professional look
+Generate a complete, production-ready solution with:
+1. Modern HTML structure with semantic elements
+2. Advanced CSS with animations, gradients, and responsive design
+3. Interactive JavaScript functionality
+4. Mobile-first responsive design
+5. Accessibility features
+6. Performance optimizations
 
-Return ONLY the HTML content, no explanations."""
+Return ONLY the code files in this exact format:
+FILE: index.html
+[complete HTML content]
+
+FILE: styles.css
+[complete CSS content]
+
+FILE: script.js
+[complete JavaScript content]
+
+Make it modern, professional, and production-ready."""
 
         elif task_info['task_type'] == 'backend':
-            prompt = f"""Create a Node.js Express API for this task:
+            prompt = f"""Create a professional backend solution for this task:
+
+Task: {task_info['task']}
+Technologies: {', '.join(task_info.get('technologies', ['Node.js', 'Express']))}
+
+Generate a complete, production-ready backend with:
+1. Express.js server with proper structure
+2. RESTful API endpoints
+3. Error handling and validation
+4. Security middleware
+5. Environment configuration
+6. Database integration (if needed)
+7. API documentation
+
+Return ONLY the code files in this exact format:
+FILE: server.js
+[complete server code]
+
+FILE: package.json
+[complete package.json with all dependencies]
+
+FILE: .env.example
+[environment variables template]
+
+Make it secure, scalable, and production-ready."""
+
+        elif task_info['task_type'] == 'bug_fix':
+            prompt = f"""Create a bug fix solution for this task:
+
 Task: {task_info['task']}
 
 Generate:
-1. A complete Express.js server file
-2. A package.json file with dependencies
+1. Analysis of the potential bug
+2. Fix implementation
+3. Prevention measures
+4. Test cases
 
-Return the files in this exact format:
-FILE: server.js
-[server code here]
-
-FILE: package.json
-[package.json content here]"""
+Return code files that address the bug with proper error handling and documentation."""
 
         else:
-            prompt = f"""Create code files for this {task_info['task_type']} task:
+            prompt = f"""Create a {task_info['task_type']} solution for this task:
+
 Task: {task_info['task']}
 Agent: {task_info['agent']}
+Technologies: {', '.join(task_info.get('technologies', []))}
 
-Generate appropriate code files based on the task requirements.
+Generate appropriate, production-ready code files based on the task requirements.
+Include proper documentation, error handling, and best practices.
+
 Return in this format:
 FILE: filename.ext
 [file content here]
@@ -182,14 +215,15 @@ FILE: filename2.ext
                 self.together_url,
                 headers=headers,
                 json={
-                    "model": "codellama/CodeLlama-7b-Instruct-hf",
+                    "model": "deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free",
                     "messages": [
-                        {"role": "system", "content": f"You are an expert {task_info['agent']} developer. Generate clean, modern, production-ready code."},
+                        {"role": "system", "content": f"You are an expert {task_info['agent']} developer. Generate clean, modern, production-ready code with best practices. Always include proper error handling, documentation, and security considerations."},
                         {"role": "user", "content": prompt}
                     ],
-                    "max_tokens": 2000,
-                    "temperature": 0.4
-                }
+                    "max_tokens": 4000,
+                    "temperature": 0.2
+                },
+                timeout=60
             )
             response.raise_for_status()
             
@@ -201,7 +235,7 @@ FILE: filename2.ext
             return files
             
         except Exception as e:
-            print(f"Together.ai code generation failed: {e}, using fallback generation")
+            print(f"DeepSeek R1 code generation failed: {e}, using fallback generation")
             # Fallback à la génération basique
             if task_info['task_type'] == 'frontend':
                 return self.generate_frontend_code(task_info['task'])
@@ -211,7 +245,7 @@ FILE: filename2.ext
                 return self.generate_feature_code(task_info)
     
     def parse_generated_files(self, content: str, task_info: Dict) -> Dict[str, str]:
-        """Parse les fichiers générés à partir du contenu Together.ai"""
+        """Parse les fichiers générés à partir du contenu DeepSeek R1"""
         files = {}
         
         # Chercher les patterns FILE: filename
@@ -260,7 +294,7 @@ FILE: filename2.ext
 {time.strftime('%Y-%m-%d %H:%M:%S')}
 
 ---
-*Créé automatiquement par AI Team Orchestrator avec Together.ai*
+*Créé automatiquement par AI Team Orchestrator avec DeepSeek R1*
 """
         
         return files
@@ -448,7 +482,7 @@ Ouvrez le fichier HTML dans votre navigateur pour voir la page.
 {time.strftime('%Y-%m-%d %H:%M:%S')}
 
 ---
-*Créé automatiquement par AI Team Orchestrator avec MCP GitHub*
+*Créé automatiquement par AI Team Orchestrator avec DeepSeek R1*
 '''
         }
     
@@ -680,9 +714,9 @@ def main():
     try:
         ai_team = AITeamMCP()
         
-        # Vérifier que la clé API Together.ai est présente
+        # Vérifier que la clé API DeepSeek R1 est présente
         if not ai_team.together_api_key:
-            print("❌ ERREUR: Clé API Together.ai manquante!")
+            print("❌ ERREUR: Clé API DeepSeek R1 manquante!")
             print("📋 SOLUTION:")
             print("1. Allez dans Settings → Secrets and variables → Actions")
             print("2. Créez un secret: TOGETHER_AI_API_KEY")
@@ -692,7 +726,7 @@ def main():
             set_github_output('error', 'Missing TOGETHER_AI_API_KEY secret')
             sys.exit(1)
         
-        print(f"✅ Together.ai API key found (length: {len(ai_team.together_api_key)})")
+        print(f"✅ DeepSeek R1 API key found (length: {len(ai_team.together_api_key)})")
         
         # Analyser la tâche
         task_info = ai_team.analyze_task()
@@ -715,7 +749,7 @@ def main():
         set_github_output('branch_name', branch_name)
         set_github_output('files_created', ', '.join(files_content.keys()))
         
-        print("✅ AI Team Together.ai completed successfully!")
+        print("✅ AI Team DeepSeek R1 completed successfully!")
         
     except Exception as e:
         print(f"❌ Error: {e}")

@@ -1,4 +1,4 @@
-name: AI Team Together.ai
+name: AI Team DeepSeek R1
 on:
   issues:
     types: [opened, edited]
@@ -18,9 +18,9 @@ permissions:
   statuses: write
 
 jobs:
-  ai-team-together:
+  ai-team-deepseek:
     runs-on: ubuntu-latest
-    name: 🤖 AI Team Together.ai
+    name: 🧠 AI Team DeepSeek R1
     
     steps:
       - name: Checkout
@@ -36,10 +36,10 @@ jobs:
           
       - name: Setup Git
         run: |
-          git config --global user.name "AI Team Together.ai"
-          git config --global user.email "ai-team-together@github-actions.local"
+          git config --global user.name "AI Team DeepSeek R1"
+          git config --global user.email "ai-team-deepseek@github-actions.local"
           
-      - name: 🤖 Run AI Team Together.ai
+      - name: 🧠 Run AI Team DeepSeek R1
         id: ai_team
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -47,7 +47,7 @@ jobs:
           ISSUE_TITLE: ${{ github.event.issue.title || github.event.inputs.task_description }}
           ISSUE_BODY: ${{ github.event.issue.body || 'Create modern code' }}
         run: |
-          # Vérifier que la clé API Together.ai est configurée
+          # Vérifier que la clé API DeepSeek R1 est configurée
           if [ -z "$TOGETHER_AI_API_KEY" ]; then
             echo "❌ ERREUR: Secret TOGETHER_AI_API_KEY non configuré!"
             echo ""
@@ -55,15 +55,17 @@ jobs:
             echo "1. Allez dans Settings → Secrets and variables → Actions"
             echo "2. Créez un nouveau secret repository"
             echo "3. Nom: TOGETHER_AI_API_KEY"
-            echo "4. Valeur: 7b61ccee2b0b0f9d4b842862034eea9b18c5e4e26728ef8714b581c0cf0c91fe"
+            echo "4. Valeur: votre-cle-together-ai"
             echo "5. Relancez ce workflow"
+            echo ""
+            echo "💡 Together.ai donne accès gratuit à DeepSeek R1 !"
             echo ""
             echo "changes_made=false" >> $GITHUB_OUTPUT
             echo "error=Missing TOGETHER_AI_API_KEY secret" >> $GITHUB_OUTPUT
             exit 1
           fi
           
-          echo "✅ Together.ai API key configured"
+          echo "✅ DeepSeek R1 API key configured"
           
           # Install Python dependencies
           pip install requests python-dotenv typing-extensions
@@ -93,7 +95,7 @@ jobs:
           
           PR_TITLE="🤖 $AGENT: $SUMMARY"
           
-          echo "🤖 Pull Request générée par AI Team Together.ai" > pr_body.txt
+          echo "🤖 Pull Request générée par AI Team DeepSeek R1" > pr_body.txt
           echo "" >> pr_body.txt
           echo "Agent IA: $AGENT" >> pr_body.txt
           if [ -n "$ISSUE_NUM" ]; then
@@ -105,9 +107,9 @@ jobs:
           echo "Description: $SUMMARY" >> pr_body.txt
           echo "Fichiers créés: $FILES" >> pr_body.txt
           echo "" >> pr_body.txt
-          echo "Technologie: Together.ai + AI Team Orchestrator" >> pr_body.txt
+          echo "Technologie: DeepSeek R1 + AI Team Orchestrator" >> pr_body.txt
           echo "" >> pr_body.txt
-          echo "Créée automatiquement par AI Team Orchestrator + Together.ai" >> pr_body.txt
+          echo "Créée automatiquement par AI Team Orchestrator + DeepSeek R1" >> pr_body.txt
           
           if [ -n "$ISSUE_NUM" ]; then
             echo "" >> pr_body.txt
@@ -126,14 +128,14 @@ jobs:
             const agent = '${{ steps.ai_team.outputs.agent }}';
             const branchName = '${{ steps.ai_team.outputs.branch_name }}';
             
-            let commentBody = '🎉 Pull Request créée avec Together.ai !\n\n';
+            let commentBody = '🎉 Pull Request créée avec DeepSeek R1 !\n\n';
             commentBody += 'Agent utilisé: ' + agent + '\n';
             commentBody += 'Branche: ' + branchName + '\n\n';
             commentBody += 'Prochaines étapes:\n';
             commentBody += '1. Review le code généré dans la PR\n';
             commentBody += '2. Tester les fonctionnalités\n';
             commentBody += '3. Merger la PR si approuvé\n\n';
-            commentBody += 'AI Team Orchestrator v1.4.3 + Together.ai';
+            commentBody += 'AI Team Orchestrator v1.4.3 + DeepSeek R1';
 
             await github.rest.issues.createComment({
               owner: context.repo.owner,
@@ -153,17 +155,17 @@ jobs:
           if [[ "$ERROR" == *"Missing TOGETHER_AI_API_KEY"* ]]; then
             echo "## ❌ Configuration manquante" > comment.md
             echo "" >> comment.md
-            echo "**Problème:** La clé API Together.ai n'est pas configurée." >> comment.md
+            echo "**Problème:** La clé API DeepSeek R1 n'est pas configurée." >> comment.md
             echo "" >> comment.md
             echo "**📋 Solution:**" >> comment.md
             echo "1. Allez dans \`Settings\` → \`Secrets and variables\` → \`Actions\`" >> comment.md
             echo "2. Cliquez sur \`New repository secret\`" >> comment.md
             echo "3. **Nom:** \`TOGETHER_AI_API_KEY\`" >> comment.md
-            echo "4. **Valeur:** \`7b61ccee2b0b0f9d4b842862034eea9b18c5e4e26728ef8714b581c0cf0c91fe\`" >> comment.md
+            echo "4. **Valeur:** \`votre-cle-together-ai\`" >> comment.md
             echo "5. Cliquez \`Add secret\`" >> comment.md
             echo "6. Relancez ce workflow" >> comment.md
             echo "" >> comment.md
-            echo "**💡 Aide:** Together.ai est gratuit et utilise des modèles open source (Llama + CodeLlama)." >> comment.md
+            echo "**💡 Aide:** DeepSeek R1 est gratuit et utilise des modèles open source (Llama + CodeLlama)." >> comment.md
             echo "" >> comment.md
             echo "---" >> comment.md
             echo "*AI Team Orchestrator v1.4.3 - Configuration requise*" >> comment.md
@@ -178,7 +180,7 @@ jobs:
             echo "" >> comment.md
             echo "**💡 Aide:**" >> comment.md
             echo "- Essayez de relancer le workflow" >> comment.md
-            echo "- Vérifiez que Together.ai est bien configuré" >> comment.md
+            echo "- Vérifiez que DeepSeek R1 est bien configuré" >> comment.md
             echo "" >> comment.md
             echo "---" >> comment.md
             echo "*AI Team Orchestrator v1.4.3 - Erreur détectée*" >> comment.md
@@ -198,14 +200,14 @@ jobs:
             echo "- Ajoutez des détails techniques" >> comment.md
             echo "" >> comment.md
             echo "---" >> comment.md
-            echo "*AI Team Orchestrator v1.4.3 avec Together.ai*" >> comment.md
+            echo "*AI Team Orchestrator v1.4.3 avec DeepSeek R1*" >> comment.md
           fi
           
           gh issue comment ${{ github.event.issue.number }} --body-file comment.md
           
       - name: 🎉 Summary
         run: |
-          echo "🤖 AI Team Together.ai completed!"
+          echo "🤖 AI Team DeepSeek R1 completed!"
           echo "Agent: ${{ steps.ai_team.outputs.agent }}"
           echo "Task: ${{ steps.ai_team.outputs.task_summary }}"
           echo "Changes: ${{ steps.ai_team.outputs.changes_made }}" 
